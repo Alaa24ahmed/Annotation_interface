@@ -15,6 +15,9 @@ console.log("Environment variables loaded:", {
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust proxy for Heroku
+app.set('trust proxy', true);
+
 // Security middleware with CSP configuration to allow inline scripts/styles
 // and FingerprintJS CDN
 app.use(helmet({
