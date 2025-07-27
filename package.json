@@ -1,0 +1,24 @@
+{
+    "name": "annotation-tool",
+    "version": "1.0.0",
+    "description": "Multicultural Reasoning Benchmark Annotation Tool",
+    "main": "server/server.js",
+    "scripts": {
+        "start": "node server/server.js",
+        "dev": "nodemon server/server.js"
+    },
+    "engines": {
+        "node": "18.x"
+    },
+    "dependencies": {
+        "@supabase/supabase-js": "^2.31.0",
+        "csv-parser": "^3.2.0",
+        "dotenv": "^16.3.1",
+        "express": "^4.18.2",
+        "express-rate-limit": "^6.9.0",
+        "helmet": "^7.0.0"
+    },
+    "devDependencies": {
+        "nodemon": "^3.1.10"
+    }
+}

@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multicultural Reasoning Benchmark</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+          --primary-color: #4361ee;
+          --primary-light: #e7ebff;
+          --primary-dark: #3f37c9;
+          --accent-color: #7b61ff;
+          --secondary-color: #5e60ce;
+          --text-dark: #2b2d42;
+          --text-light: #8d99ae;
+          --background: #f8faff;
+          --background-alt: #f0f4ff;
+          --background-card: #ffffff;
+          --border-color: #e5e7eb;
+          --success: #4caf50;
+        }
+
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+
+        body {
+          font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+          line-height: 1.7;
+          color: var(--text-dark);
+          overflow-x: hidden;
+          background-color: var(--background);
+          background-image: radial-gradient(var(--primary-light) 1px, transparent 1px);
+          background-size: 38px 38px;
+          background-position: center;
+        }
+
+        h1, h2, h3 {
+          font-weight: 600;
+          letter-spacing: -0.02em;
+          color: var(--primary-color);
+        }
+
+        h1 {
+          font-size: 2.8rem;
+          margin-bottom: 1.5rem;
+          line-height: 1.2;
+          background: linear-gradient(120deg, var(--primary-color), var(--secondary-color));
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          text-fill-color: transparent;
+        }
+
+        h2 {
+          font-size: 2rem;
+          margin-top: 5rem;
+          margin-bottom: 1.8rem;
+          position: relative;
+          display: inline-block;
+          font-weight: 700;
+        }
+
+        h2:first-of-type {
+          margin-top: 3rem;
+        }
+
+        h3 {
+          font-size: 1.3rem;
+          margin-bottom: 1rem;
+          color: var(--primary-dark);
+        }
+
+        p {
+          margin-bottom: 1.5rem;
+          font-size: 1.05rem;
+          color: var(--text-dark);
+          line-height: 1.7;
+          max-width: 100%;
+        }
+
+        .container {
+          width: 100%;
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 0 20px;
+          position: relative;
+        }
+
+        /* Hero Section */
+        .hero-wrapper {
+          position: relative;
+          background: var(--background);
+          padding: 6rem 0 5rem;
+          text-align: center;
+          position: relative;
+          overflow: hidden;
+        }
+
+        .hero-wrapper:before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 100%;
+          background: linear-gradient(180deg, rgba(231, 235, 255, 0.5) 0%, rgba(248, 250, 255, 0) 100%);
+          z-index: 0;
+        }
+
+        .hero-content {
+          position: relative;
+          z-index: 2;
+          width: 100%;
+        }
+
+        .hero-text {
+          max-width: 800px;
+          position: relative;
+          margin: 0 auto;
+        }
+
+        .hero p {
+          font-size: 1.2rem;
+          margin-bottom: 2.5rem;
+          /* max-width: 700px; */
+          margin-left: auto;
+          margin-right: auto;
+        }
+
+        .cta-button {
+          display: inline-block;
+          padding: 14px 32px;
+          background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+          color: white;
+          text-decoration: none;
+          border-radius: 8px;
+          font-weight: 600;
+          font-size: 1.05rem;
+          transition: all 0.3s ease;
+          box-shadow: 0 8px 20px rgba(67, 97, 238, 0.2);
+          position: relative;
+          overflow: hidden;
+        }
+
+        .cta-button:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 12px 25px rgba(67, 97, 238, 0.3);
+        }
+
+        .cta-button:before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%);
+          transition: all 0.6s ease;
+        }
+
+        .cta-button:hover:before {
+          left: 100%;
+        }
+
+        .arrow-icon {
+          display: inline-block;
+          margin-left: 8px;
+          transition: transform 0.3s ease;
+        }
+
+        .cta-button:hover .arrow-icon {
+          transform: translateX(4px);
+        }
+
+        /* Content Area */
+        .content-area {
+          position: relative;
+          padding: 3rem 0 5rem;
+          z-index: 1;
+          background: var(--background);
+        }
+
+        /* Content Section */
+        .content-section {
+          margin-bottom: 6rem;
+          position: relative;
+        }
+
+        .content-section:last-child {
+          margin-bottom: 0;
+        }
+
+        /* Accent shapes */
+        .accent-shape {
+          position: absolute;
+          z-index: -1;
+          opacity: 0.3;
+        }
+
+        .accent-shape-1 {
+          top: 3rem;
+          right: -5rem;
+          width: 12rem;
+          height: 12rem;
+          border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+          background-color: var(--primary-light);
+        }
+
+        .accent-shape-2 {
+          bottom: -3rem;
+          left: -8rem;
+          width: 15rem;
+          height: 15rem;
+          border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+          background-color: var(--primary-light);
+        }
+
+        /* Template Example */
+        .template-example {
+          margin: 2.5rem 0;
+          padding: 1.8rem;
+          border-radius: 12px;
+          background-color: white;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+          border-top: 3px solid var(--primary-color);
+        }
+
+        .template-example:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 15px 35px rgba(0, 0, 0, 0.06);
+        }
+
+        .template-example h3 {
+          margin-top: 0;
+          color: var(--primary-color);
+          margin-bottom: 1.2rem;
+          display: inline-block;
+        }
+
+        .template-field {
+          padding: 0.3rem 0.7rem;
+          background-color: var(--primary-light);
+          border: 1px dashed var(--primary-color);
+          border-radius: 5px;
+          display: inline-block;
+          margin: 0 5px;
+          font-family: monospace;
+          color: var(--primary-dark);
+          font-weight: 500;
+        }
+
+        .template-example p {
+          margin-bottom: 1rem;
+        }
+
+        .template-example ul {
+          margin-left: 1.5rem;
+          margin-bottom: 0;
+        }
+
+        .template-example li {
+          margin-bottom: 0.7rem;
+          position: relative;
+          padding-left: 0.5rem;
+        }
+
+        .template-example li::before {
+          content: '•';
+          position: absolute;
+          left: -1.2rem;
+          color: var(--primary-color);
+          font-weight: bold;
+        }
+
+        .template-example li:first-child {
+          color: var(--success);
+          font-weight: 500;
+        }
+
+        /* Feature Grid */
+        .feature-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: 25px;
+          margin: 3rem 0;
+        }
+
+        .feature-item {
+          background-color: white;
+          padding: 2rem;
+          border-radius: 12px;
+          transition: all 0.3s ease;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+          position: relative;
+          z-index: 1;
+          overflow: hidden;
+        }
+
+        .feature-item:hover {
+          transform: translateY(-7px);
+          box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+        }
+
+        .feature-item:before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 5px;
+          height: 0;
+          background: linear-gradient(180deg, var(--primary-color), var(--secondary-color));
+          transition: height 0.3s ease;
+          z-index: -1;
+        }
+
+        .feature-item:hover:before {
+          height: 100%;
+        }
+
+        .feature-icon {
+          width: 56px;
+          height: 56px;
+          border-radius: 12px;
+          background: linear-gradient(135deg, var(--primary-light), #dde4ff);
+          color: var(--primary-color);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 1.3rem;
+          font-size: 1.5rem;
+          transition: all 0.3s ease;
+        }
+
+        .feature-item:hover .feature-icon {
+          transform: scale(1.1);
+          background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+          color: white;
+          box-shadow: 0 8px 20px rgba(67, 97, 238, 0.15);
+        }
+
+        /* Steps */
+        .steps {
+          margin: 3.5rem 0;
+          position: relative;
+        }
+
+        .steps:before {
+          content: '';
+          position: absolute;
+          left: 15px;
+          top: 0;
+          width: 1px;
+          height: 100%;
+          background: linear-gradient(to bottom, var(--primary-light), rgba(231, 235, 255, 0));
+          z-index: 0;
+        }
+
+        .step {
+          display: flex;
+          margin-bottom: 3rem;
+          position: relative;
+          align-items: flex-start;
+        }
+
+        .step:last-child {
+          margin-bottom: 0;
+        }
+
+        .step-number {
+          background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+          color: white;
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 600;
+          margin-right: 18px;
+          flex-shrink: 0;
+          position: relative;
+          z-index: 1;
+          box-shadow: 0 5px 15px rgba(67, 97, 238, 0.15);
+        }
+
+        .step-content {
+          flex: 1;
+          background-color: white;
+          padding: 1.5rem;
+          border-radius: 12px;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .step:hover .step-content {
+          transform: translateY(-3px);
+          box-shadow: 0 15px 35px rgba(0, 0, 0, 0.06);
+        }
+
+        .step-content h3 {
+          margin-top: 0;
+          margin-bottom: 0.7rem;
+        }
+
+        .step-content p {
+          margin-bottom: 0;
+        }
+
+        /* Highlight Box */
+        .highlight-box {
+          position: relative;
+          padding: 1.8rem;
+          margin: 3rem 0;
+          border-radius: 12px;
+          background-color: var(--primary-light);
+          border-left: 4px solid var(--primary-color);
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+        }
+
+        .highlight-box p {
+          margin-bottom: 0;
+          font-weight: 500;
+        }
+
+        .highlight-box:before {
+          content: '"';
+          position: absolute;
+          top: 1rem;
+          right: 1.5rem;
+          font-size: 4rem;
+          font-family: Georgia, serif;
+          color: var(--primary-color);
+          opacity: 0.1;
+          line-height: 1;
+        }
+
+        /* Call to Action Section */
+        .cta-wrapper {
+          background: linear-gradient(135deg, var(--primary-light) 0%, #f0f4ff 100%);
+          padding: 5rem 0;
+          margin-top: 3rem;
+          position: relative;
+          overflow: hidden;
+        }
+
+        .cta-wrapper:before, .cta-wrapper:after {
+          content: '';
+          position: absolute;
+          width: 300px;
+          height: 300px;
+          border-radius: 50%;
+          background-color: rgba(123, 97, 255, 0.05);
+          z-index: 0;
+        }
+
+        .cta-wrapper:before {
+          top: -150px;
+          right: -100px;
+        }
+
+        .cta-wrapper:after {
+          bottom: -150px;
+          left: -100px;
+        }
+
+        .cta-section {
+          text-align: center;
+          position: relative;
+          z-index: 1;
+        }
+
+        .cta-content {
+          position: relative;
+          z-index: 1;
+          max-width: 800px;
+          margin: 0 auto;
+        }
+
+        .cta-section h2 {
+          font-size: 2rem;
+          margin: 0 0 1.5rem 0;
+          display: inline-block;
+        }
+
+        .cta-section p {
+          font-size: 1.2rem;
+          margin-bottom: 2.5rem;
+          margin-left: auto;
+          margin-right: auto;
+        }
+
+        /* Footer */
+        footer {
+          padding: 2.5rem 0;
+          text-align: center;
+          color: var(--text-light);
+          background-color: white;
+          position: relative;
+          box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.03);
+        }
+
+        footer p {
+          font-size: 0.95rem;
+          margin: 0;
+          color: var(--text-light);
+          margin-left: auto;
+          margin-right: auto;
+        }
+
+        /* Animation for scrolling */
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes float {
+          0% {
+            transform: translateY(0px);
+          }
+          50% {
+            transform: translateY(-10px);
+          }
+          100% {
+            transform: translateY(0px);
+          }
+        }
+
+        .animate-on-scroll {
+          opacity: 0;
+          animation: fadeInUp 0.5s ease forwards;
+        }
+
+        .float {
+          animation: float 6s ease-in-out infinite;
+        }
+        .culture-emphasis {
+          background-color: var(--primary-light);
+          color: var(--primary-dark);
+          padding: 0.2em 0.4em;
+          border-radius: 4px;
+          font-weight: 600;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+          h1 {
+            font-size: 2.4rem;
+          }
+          
+          h2 {
+            font-size: 1.8rem;
+            margin-top: 4.5rem;
+          }
+          
+          .feature-grid {
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          }
+          
+          .accent-shape-1, .accent-shape-2 {
+            display: none;
+          }
+        }
+
+        @media (max-width: 768px) {
+          h1 {
+            font-size: 2rem;
+          }
+          
+          h2 {
+            font-size: 1.6rem;
+            margin-top: 4rem;
+          }
+          
+          .hero-wrapper {
+            padding: 4rem 0 3.5rem;
+          }
+          
+          .hero p {
+            font-size: 1.1rem;
+          }
+          
+          .template-example {
+            padding: 1.5rem;
+          }
+          
+          .content-section {
+            margin-bottom: 5rem;
+          }
+          
+          .steps:before {
+            display: none;
+          }
+        }
+
+        @media (max-width: 576px) {
+          h1 {
+            font-size: 1.8rem;
+          }
+          
+          h2 {
+            font-size: 1.4rem;
+            margin-top: 3.5rem;
+          }
+          
+          .step {
+            flex-direction: column;
+          }
+          
+          .step-number {
+            margin-bottom: 15px;
+            margin-right: 0;
+          }
+          
+          .cta-button {
+            width: 100%;
+            padding: 14px 20px;
+          }
+          
+          .feature-grid {
+            grid-template-columns: 1fr;
+          }
+          
+          .cta-section h2 {
+            font-size: 1.6rem;
+          }
+          
+          .cta-section p {
+            font-size: 1.1rem;
+          }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <div class="hero-wrapper">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1>Multicultural Reasoning Benchmark</h1>
+                    <p>Help us build a diverse dataset of reasoning questions by contributing examples from <span class="culture-emphasis">your own culture and country</span> to test AI understanding of multicultural contexts.</p>
+                    <a href="/annotate" class="cta-button">Start Annotating <span class="arrow-icon">→</span></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="content-area">
+        <div class="container">
+            <div class="accent-shape accent-shape-1 float"></div>
+            <div class="accent-shape accent-shape-2 float" style="animation-delay: 2s"></div>
+            
+            
+            <!-- Project Goal Section -->
+            <!-- <div class="content-section animate-on-scroll">
+                <h2>Project Goal</h2>
+                <p>The Multicultural Reasoning Benchmark aims to create a comprehensive dataset of reasoning questions that span various cultural contexts. This dataset will help train and evaluate AI systems on their ability to understand and reason across different cultural backgrounds.</p>
+                
+                <p>By filling in templates with culturally diverse examples, you're helping to create AI systems that better understand and respect cultural differences around the world.</p>
+                
+                <div class="feature-grid">
+                    <div class="feature-item animate-on-scroll" style="animation-delay: 0.1s;">
+                        <div class="feature-icon">
+                            <i class="fas fa-globe-americas"></i>
+                        </div>
+                        <h3>Cultural Diversity</h3>
+                        <p>Questions that represent diverse cultural contexts, traditions, and knowledge systems from around the world.</p>
+                    </div>
+                    <div class="feature-item animate-on-scroll" style="animation-delay: 0.2s;">
+                        <div class="feature-icon">
+                            <i class="fas fa-language"></i>
+                        </div>
+                        <h3>Multilingual</h3>
+                        <p>Annotations in multiple languages to ensure AI systems can reason across language barriers.</p>
+                    </div>
+                    <div class="feature-item animate-on-scroll" style="animation-delay: 0.3s;">
+                        <div class="feature-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h3>Various Reasoning Types</h3>
+                        <p>Covers mathematical, logical, spatial, and cultural reasoning challenges that test AI's ability to think contextually.</p>
+                    </div>
+                </div>
+            </div> -->
+
+
+            <div class="content-section animate-on-scroll">
+                <h2>What is a Template?</h2>
+                <p>A template is a question pattern with placeholders that you'll fill in to create culturally diverse questions. Each template has been carefully designed to test specific reasoning abilities while incorporating cultural knowledge.</p>
+                
+                <div class="template-example animate-on-scroll">
+                    <h3>Example Template</h3>
+                    
+                    <div class="template-container">
+                        <div class="template-header">Question Template</div>
+                        <div class="template-question-section">
+                            <div class="template-subtitle">Question</div>
+                            <div class="template-question">
+                                Among all the food here, which one is not originally from <span class="template-field">[CITY/COUNTRY]</span>?
+                            </div>
+                        </div>
+                        
+                        <div class="template-options-section">
+                            <div class="template-subtitle">Options</div>
+                            
+                            <div class="template-option correct-option">
+                                <div class="option-label">A.</div>
+                                <div class="option-text"><span class="template-field">[Food not from the specified city/country]</span></div>
+                                <div class="correct-badge">Correct Answer</div>
+                            </div>
+                            
+                            <div class="template-option">
+                                <div class="option-label">B.</div>
+                                <div class="option-text"><span class="template-field">[Food that is from the specified city/country]</span></div>
+                            </div>
+                            
+                            <div class="template-option">
+                                <div class="option-label">C.</div>
+                                <div class="option-text"><span class="template-field">[Food that is from the specified city/country]</span></div>
+                            </div>
+                            
+                            <div class="template-option">
+                                <div class="option-label">D.</div>
+                                <div class="option-text"><span class="template-field">[Food that is from the specified city/country]</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h3>Example Annotation</h3>
+                    
+                    <div class="template-container">
+                        <div class="template-header">Completed Question</div>
+                        <div class="template-question-section">
+                            <div class="template-subtitle">Question</div>
+                            <div class="template-question">
+                                Among all the food here, which one is not originally from Indonesia?
+                            </div>
+                        </div>
+                        
+                        <div class="template-options-section">
+                            <div class="template-subtitle">Options</div>
+                            
+                            <div class="template-option correct-option">
+                                <div class="option-label">A.</div>
+                                <div class="option-text">Shawarma</div>
+                                <div class="correct-badge">Correct Answer</div>
+                            </div>
+                            
+                            <div class="template-option">
+                                <div class="option-label">B.</div>
+                                <div class="option-text">Kerak Telor</div>
+                            </div>
+                            
+                            <div class="template-option">
+                                <div class="option-label">C.</div>
+                                <div class="option-text">Ketoprak</div>
+                            </div>
+                            
+                            <div class="template-option">
+                                <div class="option-label">D.</div>
+                                <div class="option-text">Soto Betawi</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <p>By filling in both the template placeholders in the question and providing culturally appropriate answer options, you help create questions that challenge AI systems to understand cultural relationships and contexts.</p>
+            </div>
+            
+            <style>
+                .template-container {
+                    border: 1px solid var(--border-color);
+                    border-radius: 10px;
+                    margin: 20px 0;
+                    overflow: hidden;
+                }
+                
+                .template-header {
+                    background-color: var(--primary-color);
+                    color: white;
+                    padding: 10px 15px;
+                    font-weight: 600;
+                    font-size: 1.1rem;
+                }
+                
+                .template-subtitle {
+                    color: var(--primary-color);
+                    font-weight: 600;
+                    margin-bottom: 10px;
+                    font-size: 1.05rem;
+                }
+                
+                .template-question-section, .template-options-section {
+                    padding: 15px;
+                    background-color: white;
+                }
+                
+                .template-question-section {
+                    border-bottom: 1px solid var(--border-color);
+                }
+                
+                .template-question {
+                    font-size: 1.05rem;
+                    line-height: 1.6;
+                }
+                
+                .template-option {
+                    display: flex;
+                    align-items: flex-start;
+                    margin-bottom: 12px;
+                    padding: 10px;
+                    border-radius: 6px;
+                    background-color: #f9fafc;
+                    position: relative;
+                }
+                
+                .template-option:last-child {
+                    margin-bottom: 0;
+                }
+                
+                .correct-option {
+                    background-color: rgba(76, 175, 80, 0.1);
+                    border-left: 3px solid var(--success);
+                }
+                
+                .option-label {
+                    font-weight: 600;
+                    margin-right: 10px;
+                    color: var(--primary-dark);
+                    min-width: 25px;
+                }
+                
+                .option-text {
+                    flex: 1;
+                }
+                
+                .correct-badge {
+                    position: absolute;
+                    right: 10px;
+                    top: 10px;
+                    background-color: var(--success);
+                    color: white;
+                    padding: 3px 8px;
+                    border-radius: 4px;
+                    font-size: 0.8rem;
+                    font-weight: 500;
+                }
+                
+                .template-field {
+                    padding: 0.3rem 0.7rem;
+                    background-color: var(--primary-light);
+                    border: 1px dashed var(--primary-color);
+                    border-radius: 5px;
+                    display: inline-block;
+                    margin: 0 2px;
+                    font-family: monospace;
+                    color: var(--primary-dark);
+                    font-weight: 500;
+                }
+                
+                @media (max-width: 768px) {
+                    .correct-badge {
+                        position: static;
+                        display: inline-block;
+                        margin-top: 5px;
+                    }
+                    
+                    .template-option {
+                        flex-direction: column;
+                    }
+                    
+                    .option-label {
+                        margin-bottom: 5px;
+                    }
+                }
+            </style>
+
+            <!-- How to Annotate Section -->
+            <div class="content-section animate-on-scroll">
+                <h2>How to Fill Templates</h2>
+                <p>When you start the annotation process, you'll be guided through these simple steps:</p>
+                
+                <div class="steps">
+                    <div class="step animate-on-scroll">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h3>Fill in the Placeholders</h3>
+                            <p>You'll be presented with a question template containing placeholders in [BRACKETS]. Click on each placeholder and replace it with appropriate content that reflects your culture (in English).</p>
+                        </div>
+                    </div>
+                    
+                    <div class="step animate-on-scroll" style="animation-delay: 0.2s;">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h3>Translate the Question</h3>
+                            <p>After filling in the placeholders, you'll be asked to translate the complete question and all answer options into your own language while preserving the meaning and reasoning challenge.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="step animate-on-scroll" style="animation-delay: 0.4s;">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h3>Submit Your Annotation</h3>
+                            <p>Review your work and submit the completed questions. </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="highlight-box animate-on-scroll">
+                    <p>The templates cover various topics including food, art, history, geography, and cultural practices. Feel free to use your cultural knowledge and expertise to create authentic examples.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call to Action Section -->
+    <div class="cta-wrapper">
+        <div class="cta-section">
+            <div class="container">
+                <div class="cta-content">
+                    <h2 class="animate-on-scroll">Ready to Contribute?</h2>
+                    <p class="animate-on-scroll">Your culture and perspective are valuable.</p>
+                    <a href="/annotate" class="cta-button animate-on-scroll">Begin Annotation <span class="arrow-icon">→</span></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>© 2025 Multicultural Reasoning Benchmark Project</p>
+        </div>
+    </footer>
+
+    <script>
+        // Simple animation on scroll
+        document.addEventListener('DOMContentLoaded', function() {
+            const animatedElements = document.querySelectorAll('.animate-on-scroll');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.animationDelay = entry.target.style.animationDelay || '0s';
+                        entry.target.style.animationPlayState = 'running';
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                threshold: 0.1
+            });
+            
+            animatedElements.forEach(element => {
+                element.style.animationPlayState = 'paused';
+                observer.observe(element);
+            });
+        });
+    </script>
+</body>
+</html>
