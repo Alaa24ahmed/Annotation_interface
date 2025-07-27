@@ -1,0 +1,1849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multicultural Reasoning Benchmark - Annotation Tool</title>
+    
+    <!-- Add FingerprintJS -->
+    <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js"></script>
+    
+    <style>
+        :root {
+          --primary-color: #4361ee;
+          --primary-light: #4895ef;
+          --primary-dark: #3f37c9;
+          --accent-color: #f72585;
+          --success-color: #4cc9f0;
+          --warning-color: #f8961e;
+          --error-color: #e63946;
+          --text-dark: #2b2d42;
+          --text-light: #8d99ae;
+          --background-light: #f8f9fa;
+          --background-card: #ffffff;
+          --border-color: #e5e7eb;
+        }
+
+        body {
+          font-family: 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, Oxygen, Ubuntu, sans-serif;
+          line-height: 1.7;
+          max-width: 850px;
+          margin: 0 auto;
+          padding: 20px;
+          color: var(--text-dark);
+          background-color: var(--background-light);
+        }
+
+        h1, h2, h3 {
+          font-weight: 600;
+          color: var(--primary-dark);
+          letter-spacing: -0.01em;
+        }
+
+        h1 {
+          font-size: 1.8rem;
+          margin-bottom: 1.5rem;
+          text-align: center;
+        }
+
+        h2 {
+          font-size: 1.4rem;
+          margin-top: 2rem;
+          border-bottom: 2px solid var(--primary-light);
+          padding-bottom: 0.5rem;
+        }
+
+        h3 {
+          font-size: 1.1rem;
+          margin-bottom: 0.8rem;
+        }
+
+        .template {
+          margin-bottom: 30px;
+          padding: 25px;
+          border-radius: 10px;
+          background-color: var(--background-card);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+          transition: box-shadow 0.3s ease;
+        }
+
+        .placeholder {
+          background-color: rgba(67, 97, 238, 0.1);
+          padding: 3px 8px;
+          border-radius: 5px;
+          cursor: pointer;
+          border: 1px dashed var(--primary-color);
+          transition: all 0.2s ease;
+          display: inline-block;
+          margin: 3px 2px;
+        }
+
+        .placeholder:hover {
+          background-color: rgba(67, 97, 238, 0.2);
+          transform: translateY(-2px);
+          box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        }
+
+        input[type="text"] {
+          padding: 8px 12px;
+          border: 2px solid var(--primary-light);
+          border-radius: 6px;
+          font-size: inherit;
+          width: 200px;
+          transition: all 0.2s ease;
+          box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        input[type="text"]:focus {
+          border-color: var(--primary-color);
+          box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.25);
+          outline: none;
+        }
+
+        .actions {
+          display: flex;
+          gap: 15px;
+          margin-top: 25px;
+        }
+
+        button {
+          padding: 10px 20px;
+          background-color: var(--primary-color);
+          color: white;
+          border: none;
+          border-radius: 6px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          font-weight: 500;
+          font-size: 1rem;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+          position: relative;
+        }
+
+        button:hover {
+          background-color: var(--primary-dark);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        button:active {
+          transform: translateY(0);
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        button:disabled {
+          background-color: var(--text-light);
+          color: rgba(255,255,255,0.8);
+          cursor: not-allowed;
+          transform: none;
+          box-shadow: none;
+        }
+
+        #reset-btn {
+          background-color: #6c757d;
+        }
+
+        #reset-btn:hover {
+          background-color: #5a6268;
+        }
+
+        /* Tooltip for disabled button */
+        button:disabled:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            white-space: normal;
+            text-align: center;
+            z-index: 10;
+            margin-bottom: 8px;
+            font-size: 12px;
+            font-weight: normal;
+            min-width: 200px;
+            max-width: 300px;
+            width: max-content;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+
+        /* Arrow for tooltip */
+        button:disabled:hover::before {
+            content: "";
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 6px;
+            border-style: solid;
+            border-color: transparent transparent #333 transparent;
+            margin-bottom: 2px;
+        }
+
+        /* Not applicable button styling */
+        #not-applicable-btn {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+            position: relative;
+        }
+
+        #not-applicable-btn:hover {
+            background-color: #ffeaa7;
+            color: #6c5400;
+            border-color: #ffd93d;
+        }
+
+        #not-applicable-btn::before {
+            content: "⚠️";
+            margin-right: 8px;
+        }
+
+        /* Skip Reason Modal */
+        .skip-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+        
+        .skip-modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .skip-modal h3 {
+            color: #e74c3c;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .skip-modal p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .skip-reason-input {
+            width: 100%;
+            min-height: 80px;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+        
+        .skip-reason-input:focus {
+            outline: none;
+            border-color: #ffd60a;
+            box-shadow: 0 0 0 3px rgba(255, 214, 10, 0.1);
+        }
+        
+        .skip-modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .skip-modal-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .skip-cancel-btn {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .skip-cancel-btn:hover {
+            background-color: #5a6268;
+        }
+        
+        .skip-confirm-btn {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .skip-confirm-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        .skip-confirm-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        textarea {
+          width: 100%;
+          min-height: 80px;
+          padding: 12px;
+          border: 2px solid var(--border-color);
+          border-radius: 6px;
+          font-family: inherit;
+          font-size: inherit;
+          resize: vertical;
+          transition: all 0.2s ease;
+        }
+
+        textarea:focus {
+          border-color: var(--primary-color);
+          box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.25);
+          outline: none;
+        }
+
+        .status {
+          margin-top: 20px;
+          padding: 15px;
+          border-radius: 6px;
+          display: none;
+          font-weight: 500;
+          animation: fadeIn 0.3s ease;
+        }
+
+        .success {
+          display: block;
+          background-color: rgba(76, 201, 240, 0.15);
+          color: #0077b6;
+          border-left: 4px solid #0077b6;
+        }
+
+        .error {
+          display: block;
+          background-color: rgba(230, 57, 70, 0.15);
+          color: #d62828;
+          border-left: 4px solid #d62828;
+        }
+
+        .template-info {
+            margin-bottom: 15px;
+            font-size: 0.9em;
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        .loading {
+          text-align: center;
+          padding: 40px 20px;
+          font-style: italic;
+          color: var(--text-light);
+          background-color: var(--background-card);
+          border-radius: 10px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+          animation: pulse 1.5s infinite ease-in-out;
+        }
+
+        .preview-panel {
+          margin-top: 25px;
+          padding: 20px;
+          border: 1px solid var(--border-color);
+          border-radius: 8px;
+          background-color: var(--background-light);
+          display: none;
+          animation: slideIn 0.3s ease;
+          box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .preview-content {
+            margin-bottom: 15px;
+        }
+
+        .preview-question {
+          padding: 15px;
+          background-color: white;
+          border: 1px solid var(--border-color);
+          border-radius: 6px;
+          margin: 10px 0 20px;
+        }
+
+        .preview-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        #confirm-submit {
+            background-color: var(--success-color);
+        }
+
+        #cancel-preview {
+            background-color: var(--error-color);
+        }
+
+        .progress-container {
+          margin: 30px auto;
+          max-width: 600px;
+        }
+
+        .progress-steps {
+          display: flex;
+          justify-content: space-between;
+          position: relative;
+        }
+
+        .progress-steps::before {
+          content: '';
+          position: absolute;
+          top: 15px;
+          left: 0;
+          right: 0;
+          height: 2px;
+          background: var(--border-color);
+          z-index: 0;
+        }
+
+        .step {
+          position: relative;
+          z-index: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          flex: 1;
+        }
+
+        .step-number {
+          width: 30px;
+          height: 30px;
+          border-radius: 50%;
+          background: var(--text-light);
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: bold;
+          margin-bottom: 6px;
+        }
+
+        .step.active .step-number {
+          background: var(--primary-color);
+        }
+
+        .step-label {
+          font-size: 0.85rem;
+          color: var(--text-light);
+        }
+
+        .step.active .step-label {
+          color: var(--primary-color);
+          font-weight: 500;
+        }
+
+        /* New styles for options */
+        .options-container {
+            margin-top: 15px;
+        }
+        
+        .option-item {
+            display: flex;
+            margin-bottom: 12px;
+            align-items: flex-start;
+        }
+        
+        .option-label {
+            font-weight: bold;
+            margin-right: 10px;
+            min-width: 25px;
+            padding-top: 8px;
+        }
+        
+        .option-content {
+            flex: 1;
+            background-color: var(--background-light);
+            padding: 8px 12px;
+            border-radius: 6px;
+            border-left: 3px solid var(--primary-light);
+        }
+        
+        .correct-option {
+            background-color: rgba(76, 201, 240, 0.1);
+            border-radius: 6px;
+            padding: 5px;
+        }
+        
+        .correct-option .option-content {
+            border-left-color: var(--success-color);
+        }
+        
+        .correct-marker {
+            font-size: 0.8rem;
+            color: var(--success-color);
+            font-weight: 500;
+            margin-left: 10px;
+            font-style: italic;
+        }
+        
+        /* Fieldset styling */
+        fieldset {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: var(--background-card);
+        }
+        
+        legend {
+            font-weight: 600;
+            padding: 0 10px;
+            color: var(--primary-color);
+        }
+        /* Smaller translation textareas */
+        #translation-question {
+            min-height: 60px;
+            max-height: 120px;
+            height: auto;
+        }
+
+        /* Translation option textareas */
+        #translation-option-a,
+        #translation-option-b, 
+        #translation-option-c,
+        #translation-option-d {
+            min-height: 40px;
+            max-height: 80px;
+            height: auto;
+            padding: 8px;
+        }
+
+        /* Improve spacing in option content */
+        .option-content {
+            padding: 8px;
+        }
+
+        .option-content textarea {
+            margin: 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* Add resize handle indicator */
+        textarea {
+            resize: vertical;
+            background-image: linear-gradient(45deg, transparent 90%, rgba(0,0,0,0.1) 90%), 
+                            linear-gradient(-45deg, transparent 90%, rgba(0,0,0,0.1) 90%);
+            background-position: right bottom;
+            background-repeat: no-repeat;
+            background-size: 12px 12px;
+            background-origin: content-box;
+        }
+
+        /* Example question styling */
+        .example-fieldset {
+            background-color: rgba(242, 247, 255, 0.8);
+            border: 1px dashed var(--primary-light);
+        }
+
+        .example-fieldset legend {
+            color: var(--primary-dark);
+            background-color: rgba(242, 247, 255, 0.8);
+        }
+
+        .example-container {
+            padding: 0 5px;
+        }
+
+        #example-title {
+            font-style: italic;
+            font-weight: normal;
+            color: var(--text-light);
+            margin-top: 0;
+            font-size: 0.9rem;
+        }
+
+        .example-question-container, .example-options-container {
+            margin-bottom: 15px;
+        }
+
+        .example-question {
+            background-color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .example-options-container .options-container {
+            margin-top: 10px;
+        }
+
+        .example-options-container .option-content {
+            font-size: 0.95rem;
+        }
+
+        /* Simple directions panel styling */
+        .directions-panel {
+            background-color: #f0f8ff;
+            border-radius: 8px;
+            padding: 10px 15px;
+            margin-bottom: 20px;
+            border-left: 3px solid var(--primary-color);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .directions-panel h3 {
+            margin: 0;
+            color: var(--primary-dark);
+            font-size: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .toggle-directions {
+            font-size: 0.9rem;
+            color: var(--primary-color);
+            background-color: rgba(67, 97, 238, 0.1);
+            width: 20px;
+            height: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .directions-content {
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        /* Simple ordered list styling */
+        .directions-list {
+            margin: 0;
+            padding-left: 25px;
+        }
+
+        .directions-list li {
+            margin-bottom: 6px;
+            color: var(--text-dark);
+            font-size: 0.9rem;
+        }
+
+        .directions-list li:last-child {
+            margin-bottom: 0;
+        }
+
+        .directions-list li strong {
+            color: var(--primary-dark);
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.7; }
+        }
+
+        @keyframes slideIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <h1>Multicultural Reasoning Benchmark Annotation Tool</h1>
+    
+    <div class="progress-container">
+      <div class="progress-steps">
+        <div class="step active">
+          <div class="step-number">1</div>
+          <div class="step-label">Fill Template</div>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <div class="step-label">Translate</div>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <div class="step-label">Submit</div>
+        </div>
+      </div>
+    </div>
+    
+    <div id="loading" class="loading">
+        Loading template...
+    </div>
+    
+    <div class="template" id="template-container" style="display: none;">
+        <!-- Simple Numbered List Directions Panel -->
+        <div class="directions-panel">
+            <h3>Steps to Complete <span class="toggle-directions" title="Click to expand/collapse">[?]</span></h3>
+            <div class="directions-content">
+                <ol class="directions-list">
+                    <li>Examine template format</li>
+                    <li>Look at the example completed question</li>
+                    <li>Fill in the placeholders to form a new question that reflects your culture (in English)</li>
+                    <li>Provide translations in your own language.</li>
+                    <li>Review and submit</li>
+                </ol>
+            </div>
+        </div>
+        
+        <h2>Question Template</h2>
+        
+        <!-- Question Template -->
+        <fieldset>
+            <legend>Question</legend>
+            <p id="template-text"></p>
+        </fieldset>
+        
+        <!-- Options Template -->
+        <fieldset>
+            <legend>Options</legend>
+            <div class="options-container">
+                <div class="option-item correct-option">
+                    <div class="option-label">A.</div>
+                    <div class="option-content" id="option-a-template"></div>
+                    <div class="correct-marker">Correct Answer</div>
+                </div>
+                <div class="option-item">
+                    <div class="option-label">B.</div>
+                    <div class="option-content" id="option-b-template"></div>
+                </div>
+                <div class="option-item">
+                    <div class="option-label">C.</div>
+                    <div class="option-content" id="option-c-template"></div>
+                </div>
+                <div class="option-item">
+                    <div class="option-label">D.</div>
+                    <div class="option-content" id="option-d-template"></div>
+                </div>
+            </div>
+        </fieldset>
+        
+        <!-- Example Question (NEW SECTION) -->
+        <fieldset class="example-fieldset">
+            <legend>Example</legend>
+            <div class="example-container">
+                <h4 id="example-title">Here's how this question might look when completed:</h4>
+                <div class="example-question-container">
+                    <p><strong>Question:</strong></p>
+                    <div class="example-question" id="example-question">Which of the following is the furthest from Jakarta?</div>
+                </div>
+                
+                <div class="example-options-container">
+                    <p><strong>Options:</strong></p>
+                    <div class="options-container">
+                        <div class="option-item correct-option">
+                            <div class="option-label">A.</div>
+                            <div class="option-content" id="example-option-a">London (correct - 11,716 km)</div>
+                            <div class="correct-marker">Correct Answer</div>
+                        </div>
+                        <div class="option-item">
+                            <div class="option-label">B.</div>
+                            <div class="option-content" id="example-option-b">Manila (2,294 km)</div>
+                        </div>
+                        <div class="option-item">
+                            <div class="option-label">C.</div>
+                            <div class="option-content" id="example-option-c">Bangkok (2,361 km)</div>
+                        </div>
+                        <div class="option-item">
+                            <div class="option-label">D.</div>
+                            <div class="option-content" id="example-option-d">Singapore (884 km)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+        
+        <!-- Translation -->
+        <fieldset>
+            <legend>Translate Your Original Question</legend>
+            <textarea id="translation-question" placeholder="Enter your question translation here..."></textarea>
+        </fieldset>
+        
+        <!-- Translate Options -->
+        <fieldset>
+            <legend>Translate Its Options</legend>
+            <div class="options-container">
+                <div class="option-item correct-option">
+                    <div class="option-label">A.</div>
+                    <div class="option-content">
+                        <textarea id="translation-option-a" placeholder="Enter your translation for option A..."></textarea>
+                    </div>
+                    <div class="correct-marker">Correct Answer</div>
+                </div>
+                <div class="option-item">
+                    <div class="option-label">B.</div>
+                    <div class="option-content">
+                        <textarea id="translation-option-b" placeholder="Enter your translation for option B..."></textarea>
+                    </div>
+                </div>
+                <div class="option-item">
+                    <div class="option-label">C.</div>
+                    <div class="option-content">
+                        <textarea id="translation-option-c" placeholder="Enter your translation for option C..."></textarea>
+                    </div>
+                </div>
+                <div class="option-item">
+                    <div class="option-label">D.</div>
+                    <div class="option-content">
+                        <textarea id="translation-option-d" placeholder="Enter your translation for option D..."></textarea>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+        
+        <div class="actions">
+            <button id="submit-btn" disabled data-tooltip="Please complete all fields before submitting">Submit Annotation</button>
+            <button id="reset-btn">Reset</button>
+            <button id="not-applicable-btn">Not applicable to my culture</button>
+        </div>
+        
+        <div id="status" class="status"></div>
+        
+        <!-- Add preview panel -->
+        <div id="preview" class="preview-panel"></div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Global variables for user tracking
+            let currentUserId = null;
+            let deviceFingerprint = null;
+            
+            // Existing global variables
+            const loadingDiv = document.getElementById('loading');
+            const templateContainer = document.getElementById('template-container');
+            const templateText = document.getElementById('template-text');
+            const optionATemplate = document.getElementById('option-a-template');
+            const optionBTemplate = document.getElementById('option-b-template');
+            const optionCTemplate = document.getElementById('option-c-template');
+            const optionDTemplate = document.getElementById('option-d-template');
+            
+            const translationQuestion = document.getElementById('translation-question');
+            const translationOptionA = document.getElementById('translation-option-a');
+            const translationOptionB = document.getElementById('translation-option-b');
+            const translationOptionC = document.getElementById('translation-option-c');
+            const translationOptionD = document.getElementById('translation-option-d');
+            
+            const submitBtn = document.getElementById('submit-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const statusDiv = document.getElementById('status');
+            const previewDiv = document.getElementById('preview');
+            
+            // Current template data
+            let currentTemplate = null;
+            
+            // Generate device fingerprint using FingerprintJS
+            async function generateDeviceFingerprint() {
+                try {
+                    console.log('Loading FingerprintJS...');
+                    const fp = await FingerprintJS.load();
+                    const result = await fp.get();
+                    
+                    console.log('FingerprintJS loaded successfully');
+                    console.log('Visitor ID:', result.visitorId);
+                    
+                    return result.visitorId;
+                } catch (error) {
+                    console.error('FingerprintJS failed, using fallback:', error);
+                    return generateFallbackFingerprint();
+                }
+            }
+            
+            // Fallback fingerprinting if FingerprintJS fails
+            function generateFallbackFingerprint() {
+                const fingerprint = {
+                    userAgent: navigator.userAgent,
+                    language: navigator.language,
+                    screenResolution: `${screen.width}x${screen.height}`,
+                    platform: navigator.platform,
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+                };
+                
+                const fingerprintString = Object.values(fingerprint).join('|');
+                return 'fallback_' + btoa(fingerprintString).replace(/[^a-zA-Z0-9]/g, '').substring(0, 12);
+            }
+            
+            // Get user ID (Prolific-ready)
+            function getUserId() {
+                // Check for Prolific ID first
+                const urlParams = new URLSearchParams(window.location.search);
+                const prolificPID = urlParams.get('PROLIFIC_PID');
+                
+                if (prolificPID) {
+                    console.log('Prolific user detected:', prolificPID);
+                    localStorage.setItem('prolificPID', prolificPID);
+                    return prolificPID;
+                }
+                
+                // Check if we have stored Prolific ID
+                const storedProlificPID = localStorage.getItem('prolificPID');
+                if (storedProlificPID) {
+                    console.log('Returning Prolific user:', storedProlificPID);
+                    return storedProlificPID;
+                }
+                
+                // Fallback to development user ID
+                let userId = localStorage.getItem('devUserId');
+                if (!userId) {
+                    userId = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+                    localStorage.setItem('devUserId', userId);
+                    console.log('Development user created:', userId);
+                }
+                
+                return userId;
+            }
+            
+            // Initialize user identification (async)
+            async function initUserIdentification() {
+                currentUserId = getUserId();
+                deviceFingerprint = await generateDeviceFingerprint();
+                
+                console.log('User identification complete:', {
+                    userId: currentUserId,
+                    fingerprint: deviceFingerprint,
+                    isProlificUser: currentUserId.startsWith('6') || currentUserId.startsWith('5')
+                });
+                
+                // Show debug info for testing
+                // showDebugInfo(); // Hidden for production
+            }
+            
+            // Show debug info on page for testing
+            function showDebugInfo() {
+                const debugDiv = document.createElement('div');
+                debugDiv.id = 'debug-info';
+                debugDiv.style.cssText = `
+                    position: fixed; 
+                    top: 10px; 
+                    right: 10px; 
+                    background: #f8f9fa; 
+                    border: 1px solid #dee2e6; 
+                    padding: 10px; 
+                    border-radius: 5px; 
+                    font-family: monospace; 
+                    font-size: 11px; 
+                    z-index: 1000;
+                    max-width: 300px;
+                `;
+                
+                const isProlific = currentUserId.startsWith('6') || currentUserId.startsWith('5');
+                debugDiv.innerHTML = `
+                    <strong>🔍 User Debug Info</strong><br>
+                    <strong>User ID:</strong> ${currentUserId}<br>
+                    <strong>Type:</strong> ${isProlific ? 'Prolific' : 'Development'}<br>
+                    <strong>Fingerprint:</strong> ${deviceFingerprint}<br>
+                    <button onclick="document.getElementById('debug-info').style.display='none'" style="margin-top: 5px;">Hide</button>
+                `;
+                
+                document.body.appendChild(debugDiv);
+            }
+            
+            // Initialize the application
+            async function init() {
+                try {
+                    // Initialize user identification first
+                    await initUserIdentification();
+                    
+                    // Show loading state
+                    loadingDiv.style.display = 'block';
+                    templateContainer.style.display = 'none';
+                    
+                    // Fetch a template from the server
+                    fetchRandomTemplate();
+                    
+                    // Setup action buttons
+                    const notApplicableBtn = document.getElementById('not-applicable-btn');
+                    console.log('Setting up skip button:', notApplicableBtn);
+                    submitBtn.addEventListener('click', showPreview);
+                    resetBtn.addEventListener('click', resetTemplate);
+                    notApplicableBtn.addEventListener('click', function() {
+                        console.log('Skip button clicked!');
+                        showSkipModal();
+                    });
+                    
+                    // Add event listeners for translation inputs to update progress
+                    const translationInputs = [
+                        translationQuestion, translationOptionA, 
+                        translationOptionB, translationOptionC, translationOptionD
+                    ];
+                    
+                    translationInputs.forEach(input => {
+                        input.addEventListener('input', function() {
+                            validateAnnotation();
+                            updateProgressBasedOnCompleteness();
+                        });
+                    });
+                    
+                    // Setup directions panel toggle
+                    document.querySelector('.directions-panel h3').addEventListener('click', function() {
+                        const content = document.querySelector('.directions-content');
+                        const toggle = document.querySelector('.toggle-directions');
+                        
+                        if (content.style.display === 'none') {
+                            content.style.display = 'block';
+                            toggle.textContent = '[−]';
+                        } else {
+                            content.style.display = 'none';
+                            toggle.textContent = '[+]';
+                        }
+                    });
+                } catch (error) {
+                    console.error('Initialization error:', error);
+                    // Continue with existing init even if fingerprinting fails
+                    currentUserId = getUserId();
+                    deviceFingerprint = 'error_' + Date.now();
+                    
+                    // Show loading state
+                    loadingDiv.style.display = 'block';
+                    templateContainer.style.display = 'none';
+                    
+                    // Fetch a template from the server
+                    fetchRandomTemplate();
+                    
+                    // Setup action buttons
+                    const notApplicableBtn = document.getElementById('not-applicable-btn');
+                    submitBtn.addEventListener('click', showPreview);
+                    resetBtn.addEventListener('click', resetTemplate);
+                    notApplicableBtn.addEventListener('click', function() {
+                        console.log('Skip button clicked! (second listener)');
+                        showSkipModal();
+                    });
+                }
+            }
+            
+            // Update progress based on completeness
+            function updateProgressBasedOnCompleteness() {
+                const allTranslationFields = [
+                    translationQuestion.value.trim(),
+                    translationOptionA.value.trim(),
+                    translationOptionB.value.trim(),
+                    translationOptionC.value.trim(),
+                    translationOptionD.value.trim()
+                ];
+                
+                const filledCount = allTranslationFields.filter(field => field !== '').length;
+                
+                if (filledCount === 0) {
+                    updateProgressSteps(1);
+                } else if (filledCount < 5) {
+                    updateProgressSteps(2);
+                } else {
+                    updateProgressSteps(3);
+                }
+            }
+            
+            // Update progress steps
+            function updateProgressSteps(step) {
+                const steps = document.querySelectorAll('.step');
+                steps.forEach((el, index) => {
+                    if (index < step) {
+                        el.classList.add('active');
+                    } else {
+                        el.classList.remove('active');
+                    }
+                });
+            }
+            
+            // Fetch a random template from the server
+            async function fetchRandomTemplate() {
+                try {
+                    console.log("Fetching random template from server...");
+                    
+                    // Hide preview if visible
+                    previewDiv.style.display = 'none';
+                    
+                    const response = await fetch('/api/templates/random?t=' + new Date().getTime());
+                    console.log("Response status:", response.status);
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch template: ' + response.status);
+                    }
+                    
+                    const template = await response.json();
+                    console.log("Received template from server:", template);
+                    loadTemplate(template);
+                } catch (error) {
+                    console.error('Error fetching template:', error);
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = 'Error loading template: ' + error.message;
+                    statusDiv.style.display = 'block';
+                    
+                    console.log("Using example template as fallback");
+                    createExampleTemplate();
+                }
+            }
+            
+            // Function to get template examples based on template ID or type
+            function getTemplateExample(templateId, templateCategory) {
+                // This would ideally come from your server, but here's a static example mapping
+                const examples = {
+                    // Spatial reasoning example
+                    8: {
+                        question: "Which of the following is the furthest from Jakarta?",
+                        optionA: "London (correct - 11,716 km)",
+                        optionB: "Manila (2,294 km)",
+                        optionC: "Bangkok (2,361 km)",
+                        optionD: "Singapore (884 km)"
+                    },
+                    // Food example - template for "not originally from" questions
+                    1: {
+                        question: "Among all the food here, which one is not originally from Indonesia?",
+                        optionA: "Shawarma (Middle Eastern dish)",
+                        optionB: "Kerak Telor (traditional Betawi dish)",
+                        optionC: "Ketoprak (traditional Javanese dish)",
+                        optionD: "Soto Betawi (traditional dish from Jakarta)"
+                    },
+                    // Cultural example - proverbs
+                    2: {
+                        question: "If the proverb 'A stitch in time saves nine' is associated with English, which proverb would be associated with Indonesian?",
+                        optionA: "Ada ubi, ada talas, ada budi, ada balas (There are sweet potatoes, there are taros, there are kindnesses, there are returns)",
+                        optionB: "Out of sight, out of mind",
+                        optionC: "The early bird catches the worm",
+                        optionD: "Don't count your chickens before they hatch"
+                    },
+                    // Wedding traditions
+                    3: {
+                        question: "In a traditional Javanese wedding, which ceremony involves the bride washing the groom's feet?",
+                        optionA: "Siraman (correct answer)",
+                        optionB: "Midodareni",
+                        optionC: "Pengajian",
+                        optionD: "Seserahan"
+                    },
+                    // Default example for any template
+                    default: {
+                        question: "This is an example of how this question might look when completed.",
+                        optionA: "This is the correct option with relevant details",
+                        optionB: "This is an incorrect option",
+                        optionC: "This is another incorrect option",
+                        optionD: "This is the final incorrect option"
+                    }
+                };
+                
+                // Try to match by template ID first
+                if (examples[templateId]) {
+                    return examples[templateId];
+                }
+                
+                // If no match by ID, try to match by category keywords
+                if (templateCategory) {
+                    if (templateCategory.includes("Food")) {
+                        return examples[1];
+                    } else if (templateCategory.includes("Spatial") || templateCategory.includes("Geographic")) {
+                        return examples[8];
+                    } else if (templateCategory.includes("Cultural") || templateCategory.includes("Proverb")) {
+                        return examples[2];
+                    } else if (templateCategory.includes("Wedding") || templateCategory.includes("Ceremony")) {
+                        return examples[3];
+                    }
+                }
+                
+                // Return default if no matches found
+                return examples.default;
+            }
+                    
+            // Create a sample template for development/testing
+            function createExampleTemplate() {
+                const template = {
+                    id: 8,
+                    template: "Which of the following is the furthest from [CITY]?",
+                    category: "Mathematical Reasoning, Multi-hop Reasoning, Spatial Reasoning - Landmarks and Architecture",
+                    template_text: `Which of the following is the furthest from <span class="placeholder" data-placeholder-id="CITY">[CITY]</span>?`,
+                    option_a: `<span class="placeholder" data-placeholder-id="CORRECT_OPTION">[The city that is geographically furthest]</span>`,
+                    option_b: `<span class="placeholder" data-placeholder-id="WRONG_OPTION_1">[Cities that are geographically closer]</span>`,
+                    option_c: `<span class="placeholder" data-placeholder-id="WRONG_OPTION_2">[Cities that are geographically closer]</span>`,
+                    option_d: `<span class="placeholder" data-placeholder-id="WRONG_OPTION_3">[Cities that are geographically closer]</span>`
+                };
+                
+                loadTemplate(template);
+            }
+            // Load a template into the UI
+            function loadTemplate(template) {
+                currentTemplate = template;
+                
+                // Function to convert \n to <br> for proper line breaks
+                function formatLineBreaks(text) {
+                    if (!text) return text;
+                    return text.replace(/\\n/g, '<br>');
+                }
+                
+                // Update template text for question
+                templateText.innerHTML = formatLineBreaks(template.template_text);
+                
+                // Update template text for options - use the actual template content from CSV
+                optionATemplate.innerHTML = formatLineBreaks(template.option_a) || '<span class="placeholder" data-placeholder-id="CORRECT_OPTION">[The correct option]</span>';
+                optionBTemplate.innerHTML = formatLineBreaks(template.option_b) || '<span class="placeholder" data-placeholder-id="WRONG_OPTION_1">[An incorrect option]</span>';
+                optionCTemplate.innerHTML = formatLineBreaks(template.option_c) || '<span class="placeholder" data-placeholder-id="WRONG_OPTION_2">[An incorrect option]</span>';
+                optionDTemplate.innerHTML = formatLineBreaks(template.option_d) || '<span class="placeholder" data-placeholder-id="WRONG_OPTION_3">[An incorrect option]</span>';
+                
+                // Load example directly from template data
+                if (template.example) {
+                    document.getElementById('example-question').innerHTML = formatLineBreaks(template.example.question) || "Example question not available";
+                    document.getElementById('example-option-a').innerHTML = formatLineBreaks(template.example.optionA) || "Example option A not available";
+                    document.getElementById('example-option-b').innerHTML = formatLineBreaks(template.example.optionB) || "Example option B not available";
+                    document.getElementById('example-option-c').innerHTML = formatLineBreaks(template.example.optionC) || "Example option C not available";
+                    document.getElementById('example-option-d').innerHTML = formatLineBreaks(template.example.optionD) || "Example option D not available";
+                } else {
+                    // Fallback to getTemplateExample function if no example in the template data
+                    const example = getTemplateExample(template.id, template.category);
+                    document.getElementById('example-question').innerHTML = formatLineBreaks(example.question);
+                    document.getElementById('example-option-a').innerHTML = formatLineBreaks(example.optionA);
+                    document.getElementById('example-option-b').innerHTML = formatLineBreaks(example.optionB);
+                    document.getElementById('example-option-c').innerHTML = formatLineBreaks(example.optionC);
+                    document.getElementById('example-option-d').innerHTML = formatLineBreaks(example.optionD);
+                }
+                
+                // Clear translation fields
+                translationQuestion.value = '';
+                translationOptionA.value = '';
+                translationOptionB.value = '';
+                translationOptionC.value = '';
+                translationOptionD.value = '';
+                
+                // Reset status
+                statusDiv.className = 'status';
+                statusDiv.textContent = '';
+                statusDiv.style.display = 'none';
+                
+                // Hide loading state
+                loadingDiv.style.display = 'none';
+                templateContainer.style.display = 'block';
+                
+                // Reset progress steps
+                updateProgressSteps(1);
+                
+                // Setup placeholder functionality for question and options
+                initPlaceholders();
+                
+                // Initial validation
+                validateAnnotation();
+            }
+            
+            // Initialize placeholder functionality
+            function initPlaceholders() {
+                const placeholders = document.querySelectorAll('.placeholder');
+                
+                placeholders.forEach(placeholder => {
+                    placeholder.addEventListener('click', function() {
+                        const placeholderId = this.getAttribute('data-placeholder-id');
+                        const placeholderText = this.textContent;
+                        
+                        // Create input field
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.value = '';
+                        input.setAttribute('data-placeholder-id', placeholderId);
+                        input.placeholder = placeholderText;
+                        
+                        // Replace placeholder with input
+                        this.parentNode.replaceChild(input, this);
+                        
+                        // Focus on the new input
+                        input.focus();
+                        
+                        // Handle input changes
+                        input.addEventListener('input', function() {
+                            validateAnnotation();
+                        });
+                        
+                        // Handle input blur
+                        input.addEventListener('blur', function() {
+                            if (this.value.trim() === '') {
+                                // Convert back to placeholder if empty
+                                const newPlaceholder = createPlaceholder(placeholderId, placeholderText);
+                                this.parentNode.replaceChild(newPlaceholder, this);
+                                validateAnnotation();
+                            }
+                        });
+                        
+                        // Initial validation after creating input
+                        validateAnnotation();
+                    });
+                });
+            }
+            
+            // Create a placeholder element
+            function createPlaceholder(id, text) {
+                const placeholder = document.createElement('span');
+                placeholder.className = 'placeholder';
+                placeholder.setAttribute('data-placeholder-id', id);
+                placeholder.textContent = text;
+                
+                placeholder.addEventListener('click', function() {
+                    const placeholderId = this.getAttribute('data-placeholder-id');
+                    const placeholderText = this.textContent;
+                    
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.value = '';
+                    input.setAttribute('data-placeholder-id', placeholderId);
+                    input.placeholder = placeholderText;
+                    
+                    this.parentNode.replaceChild(input, this);
+                    input.focus();
+                    
+                    input.addEventListener('input', function() {
+                        validateAnnotation();
+                    });
+                    
+                    input.addEventListener('blur', function() {
+                        if (this.value.trim() === '') {
+                            const newPlaceholder = createPlaceholder(placeholderId, placeholderText);
+                            this.parentNode.replaceChild(newPlaceholder, this);
+                            validateAnnotation();
+                        }
+                    });
+                    
+                    validateAnnotation();
+                });
+                
+                return placeholder;
+            }
+            
+            // Validation function to check if all fields are filled
+            function validateAnnotation() {
+                const placeholders = document.querySelectorAll('.placeholder');
+                const inputs = document.querySelectorAll('input[data-placeholder-id]');
+                let isValid = true;
+                let missingFields = [];
+                
+                // Check if any placeholders are still visible (not converted to inputs)
+                if (placeholders.length > 0) {
+                    isValid = false;
+                    placeholders.forEach(placeholder => {
+                        missingFields.push(placeholder.getAttribute('data-placeholder-id'));
+                    });
+                }
+                
+                // Check if any inputs are empty
+                inputs.forEach(input => {
+                    if (!input.value || input.value.trim() === '') {
+                        isValid = false;
+                        missingFields.push(input.getAttribute('data-placeholder-id'));
+                    }
+                });
+                
+                // Check if all translation fields are provided
+                const translationFields = [
+                    { elem: translationQuestion, name: 'Question Translation' },
+                    { elem: translationOptionA, name: 'Option A Translation' },
+                    { elem: translationOptionB, name: 'Option B Translation' },
+                    { elem: translationOptionC, name: 'Option C Translation' },
+                    { elem: translationOptionD, name: 'Option D Translation' }
+                ];
+                
+                translationFields.forEach(field => {
+                    if (!field.elem.value || field.elem.value.trim() === '') {
+                        isValid = false;
+                        missingFields.push(field.name);
+                    }
+                });
+                
+                // Update submit button state
+                submitBtn.disabled = !isValid;
+                
+                // Update tooltip
+                if (!isValid) {
+                    const tooltip = `Please complete: ${missingFields.join(', ')}`;
+                    submitBtn.setAttribute('data-tooltip', tooltip);
+                } else {
+                    submitBtn.setAttribute('data-tooltip', '');
+                }
+                
+                return isValid;
+            }
+            
+            // Get completed question with filled-in values
+            function getCompletedQuestion() {
+                // Get all inputs with placeholder values
+                const inputs = document.querySelectorAll('input[data-placeholder-id]');
+                const placeholderValues = {};
+                
+                // Build a map of placeholder IDs to their values
+                inputs.forEach(input => {
+                    const id = input.getAttribute('data-placeholder-id');
+                    const value = input.value.trim();
+                    if (value) {
+                        placeholderValues[id] = value;
+                    }
+                });
+                
+                console.log("Placeholder values for options:", placeholderValues);
+                
+                // Create a simplified version of the completed question
+                let question = currentTemplate.template; // Use the original template text
+                
+                // Replace placeholders in the question with actual values
+                Object.keys(placeholderValues).forEach(key => {
+                    question = question.replace(`[${key}]`, placeholderValues[key]);
+                });
+                
+                // Convert \n to actual line breaks for display
+                question = question.replace(/\\n/g, '\n');
+                
+                // DIRECT APPROACH: Get options by specific placeholder IDs
+                const optionA = placeholderValues['CORRECT_OPTION'] || "Correct option not provided";
+                const optionB = placeholderValues['WRONG_OPTION_1'] || "Wrong option 1 not provided";
+                const optionC = placeholderValues['WRONG_OPTION_2'] || "Wrong option 2 not provided";
+                const optionD = placeholderValues['WRONG_OPTION_3'] || "Wrong option 3 not provided";
+                
+                console.log("Direct option extraction:", {optionA, optionB, optionC, optionD});
+                
+                return {
+                    question,
+                    optionA, 
+                    optionB,
+                    optionC,
+                    optionD
+                };
+            }
+            
+            // Show preview before submission
+            function showPreview() {
+                if (!validateAnnotation()) {
+                    return;
+                }
+                
+                // Update progress to step 3
+                updateProgressSteps(3);
+                
+                // Get completed values
+                const completed = getCompletedQuestion();
+                
+                // Get translation values
+                const translatedQuestion = translationQuestion.value;
+                const translatedOptionA = translationOptionA.value;
+                const translatedOptionB = translationOptionB.value;
+                const translatedOptionC = translationOptionC.value;
+                const translatedOptionD = translationOptionD.value;
+                
+                // Build preview HTML
+                previewDiv.innerHTML = `
+                    <h3>Preview before submission:</h3>
+                    <div class="preview-content">
+                        <fieldset>
+                            <legend>Completed Question</legend>
+                            <p><strong>Question:</strong></p>
+                            <div class="preview-question">${completed.question.replace(/\n/g, '<br>')}</div>
+                            
+                            <p><strong>Options:</strong></p>
+                            <div class="options-container">
+                                <div class="option-item correct-option">
+                                    <div class="option-label">A.</div>
+                                    <div class="option-content">${completed.optionA}</div>
+                                    <div class="correct-marker">Correct Answer</div>
+                                </div>
+                                <div class="option-item">
+                                    <div class="option-label">B.</div>
+                                    <div class="option-content">${completed.optionB}</div>
+                                </div>
+                                <div class="option-item">
+                                    <div class="option-label">C.</div>
+                                    <div class="option-content">${completed.optionC}</div>
+                                </div>
+                                <div class="option-item">
+                                    <div class="option-label">D.</div>
+                                    <div class="option-content">${completed.optionD}</div>
+                                </div>
+                            </div>
+                        </fieldset>
+                        
+                        <fieldset>
+                            <legend>Translation</legend>
+                            <p><strong>Question:</strong></p>
+                            <div class="preview-question">${translatedQuestion.replace(/\n/g, '<br>')}</div>
+                            
+                            <p><strong>Options:</strong></p>
+                            <div class="options-container">
+                                <div class="option-item correct-option">
+                                    <div class="option-label">A.</div>
+                                    <div class="option-content">${translatedOptionA}</div>
+                                    <div class="correct-marker">Correct Answer</div>
+                                </div>
+                                <div class="option-item">
+                                    <div class="option-label">B.</div>
+                                    <div class="option-content">${translatedOptionB}</div>
+                                </div>
+                                <div class="option-item">
+                                    <div class="option-label">C.</div>
+                                    <div class="option-content">${translatedOptionC}</div>
+                                </div>
+                                <div class="option-item">
+                                    <div class="option-label">D.</div>
+                                    <div class="option-content">${translatedOptionD}</div>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>
+                    <div class="preview-actions">
+                        <button id="confirm-submit">Confirm Submission</button>
+                        <button id="cancel-preview">Edit More</button>
+                    </div>
+                `;
+                
+                previewDiv.style.display = 'block';
+                
+                // Add event listeners
+                document.getElementById('confirm-submit').addEventListener('click', submitAnnotation);
+                document.getElementById('cancel-preview').addEventListener('click', () => {
+                    previewDiv.style.display = 'none';
+                    updateProgressSteps(2); // Go back to step 2
+                });
+            }
+            
+            // Submit the annotation
+            function submitAnnotation() {
+                // Validate before submission
+                if (!validateAnnotation()) {
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = 'Please fill in all required fields before submitting.';
+                    statusDiv.style.display = 'block';
+                    return;
+                }
+                
+                // Get completed values
+                const completed = getCompletedQuestion();
+                console.log("Submit completed values:", completed);
+                
+                // Check if options are empty and provide fallback text
+                if (!completed.optionA || completed.optionA.trim() === '') {
+                    console.error("Option A is empty!");
+                }
+                if (!completed.optionB || completed.optionB.trim() === '') {
+                    console.error("Option B is empty!");
+                }
+                if (!completed.optionC || completed.optionC.trim() === '') {
+                    console.error("Option C is empty!");
+                }
+                if (!completed.optionD || completed.optionD.trim() === '') {
+                    console.error("Option D is empty!");
+                }
+                
+                // Collect the question data
+                const questionData = {
+                    template_id: currentTemplate.id,
+                    reasoning_category: currentTemplate.reasoning_category || '',
+                    cultural_aspect: currentTemplate.cultural_aspect || '',
+                    original_template: currentTemplate.template,
+                    values: {},
+                    
+                    // Make sure these are never empty by providing fallbacks
+                    generated_question: completed.question || "Question not available",
+                    generated_option1: completed.optionA || "Option A not available",
+                    generated_option2: completed.optionB || "Option B not available",
+                    generated_option3: completed.optionC || "Option C not available", 
+                    generated_option4: completed.optionD || "Option D not available",
+                    
+                    // Translated content
+                    translated_question: translationQuestion.value,
+                    translated_option1: translationOptionA.value,
+                    translated_option2: translationOptionB.value,
+                    translated_option3: translationOptionC.value,
+                    translated_option4: translationOptionD.value,
+                    
+                    // Add user tracking data
+                    user_id: currentUserId,
+                    device_fingerprint: deviceFingerprint,
+                    is_prolific_user: currentUserId.startsWith('6') || currentUserId.startsWith('5')
+                };
+                
+                // Collect placeholder values
+                const inputs = document.querySelectorAll('input[data-placeholder-id]');
+                inputs.forEach(input => {
+                    const id = input.getAttribute('data-placeholder-id');
+                    questionData.values[id] = input.value.trim();
+                });
+                
+                console.log("Final data being submitted:", questionData);
+                
+                // Validate user identification
+                if (!currentUserId || !deviceFingerprint) {
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = 'Error: User identification not complete. Please refresh the page.';
+                    statusDiv.style.display = 'block';
+                    return;
+                }
+                
+                // Make sure all required fields are present
+                const requiredFields = [
+                    'generated_question', 
+                    'generated_option1', 
+                    'generated_option2',
+                    'generated_option3',
+                    'generated_option4',
+                    'translated_question',
+                    'translated_option1',
+                    'translated_option2',
+                    'translated_option3',
+                    'translated_option4'
+                ];
+                
+                let missingFields = [];
+                requiredFields.forEach(field => {
+                    if (!questionData[field] || questionData[field].trim() === '') {
+                        missingFields.push(field);
+                    }
+                });
+                
+                if (missingFields.length > 0) {
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = `Error: Missing required fields: ${missingFields.join(', ')}`;
+                    statusDiv.style.display = 'block';
+                    return;
+                }
+                
+                // Save to Supabase
+                saveToSupabase(questionData);
+            }
+            
+            // Reset the current template
+            function resetTemplate() {
+                if (currentTemplate) {
+                    loadTemplate(currentTemplate);
+                } else {
+                    fetchRandomTemplate();
+                }
+            }
+            
+            // Show skip reason modal
+            function showSkipModal() {
+                console.log('showSkipModal called');
+                const modal = document.getElementById('skipModal');
+                const input = document.getElementById('skipReasonInput');
+                const confirmBtn = document.getElementById('skipConfirmBtn');
+                
+                console.log('Modal elements:', { modal, input, confirmBtn });
+                
+                // Reset modal
+                input.value = '';
+                confirmBtn.disabled = true;
+                
+                // Show modal
+                modal.style.display = 'block';
+                console.log('Modal should now be visible');
+                
+                // Focus on input
+                setTimeout(() => input.focus(), 100);
+            }
+            
+            // Hide skip reason modal
+            function hideSkipModal() {
+                const modal = document.getElementById('skipModal');
+                modal.style.display = 'none';
+            }
+            
+            // Skip current template with reason
+            async function skipTemplateWithReason(reason) {
+                try {
+                    // Log the skipped template for analytics
+                    if (currentTemplate) {
+                        console.log('Template skipped:', {
+                            template_id: currentTemplate.id,
+                            reasoning_category: currentTemplate.reasoning_category,
+                            cultural_aspect: currentTemplate.cultural_aspect,
+                            template: currentTemplate.template.substring(0, 100) + '...',
+                            reason: reason
+                        });
+                        
+                        // Send skip data to server for analytics
+                        const skipData = {
+                            template_id: currentTemplate.id,
+                            reasoning_category: currentTemplate.reasoning_category,
+                            cultural_aspect: currentTemplate.cultural_aspect,
+                            original_template: currentTemplate.template,
+                            user_id: currentUserId,
+                            device_fingerprint: deviceFingerprint,
+                            is_prolific_user: currentUserId && (currentUserId.startsWith('6') || currentUserId.startsWith('5')),
+                            skip_reason: reason
+                        };
+                        
+                        try {
+                            const response = await fetch('/api/templates/skip', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify(skipData)
+                            });
+                            
+                            if (response.ok) {
+                                console.log('Template skip logged successfully');
+                            } else {
+                                console.warn('Failed to log template skip');
+                            }
+                        } catch (logError) {
+                            console.warn('Error logging template skip:', logError);
+                            // Don't block the skip functionality if logging fails
+                        }
+                    }
+                    
+                    // Hide modal
+                    hideSkipModal();
+                    
+                    // Show loading state
+                    loadingDiv.style.display = 'block';
+                    templateContainer.style.display = 'none';
+                    statusDiv.className = 'status';
+                    statusDiv.textContent = 'Loading a new template...';
+                    statusDiv.style.display = 'block';
+                    
+                    // Reset progress to step 1
+                    updateProgressSteps(1);
+                    
+                    // Fetch a new template
+                    fetchRandomTemplate();
+                    
+                } catch (error) {
+                    console.error('Error in skipTemplateWithReason:', error);
+                    // Still proceed with skip even if there's an error
+                    hideSkipModal();
+                    loadingDiv.style.display = 'block';
+                    templateContainer.style.display = 'none';
+                    statusDiv.className = 'status';
+                    statusDiv.textContent = 'Loading a new template...';
+                    statusDiv.style.display = 'block';
+                    updateProgressSteps(1);
+                    fetchRandomTemplate();
+                }
+            }
+            
+            // Function to save data to Supabase via our server API
+            async function saveToSupabase(questionData) {
+                try {
+                    statusDiv.className = 'status';
+                    statusDiv.textContent = 'Submitting...';
+                    statusDiv.style.display = 'block';
+                    
+                    console.log("Submitting data:", questionData);
+                    
+                    // Send to our server API (not directly to Supabase)
+                    const response = await fetch('/api/annotations', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(questionData)
+                    });
+                    
+                    console.log("Response status:", response.status);
+                    const result = await response.json();
+                    console.log("Response data:", result);
+                    
+                    if (!response.ok) {
+                        throw new Error(result.error || 'Failed to submit');
+                    }
+                    
+                    // Hide preview panel
+                    previewDiv.style.display = 'none';
+                    
+                    // Show success message
+                    statusDiv.className = 'status success';
+                    statusDiv.textContent = 'Annotation submitted successfully!';
+                    
+                    // Fetch a new template after a delay
+                    setTimeout(() => {
+                        fetchRandomTemplate();
+                    }, 2000);
+                    
+                } catch (error) {
+                    console.error('Error:', error);
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = 'Error: ' + error.message;
+                    statusDiv.style.display = 'block';
+                }
+            }
+            
+            // Setup modal event listeners
+            function setupModalEventListeners() {
+                const skipModal = document.getElementById('skipModal');
+                const skipReasonInput = document.getElementById('skipReasonInput');
+                const skipCancelBtn = document.getElementById('skipCancelBtn');
+                const skipConfirmBtn = document.getElementById('skipConfirmBtn');
+                
+                // Enable/disable confirm button based on input
+                skipReasonInput.addEventListener('input', function() {
+                    const hasText = this.value.trim().length > 0;
+                    skipConfirmBtn.disabled = !hasText;
+                });
+                
+                // Cancel button
+                skipCancelBtn.addEventListener('click', hideSkipModal);
+                
+                // Confirm button
+                skipConfirmBtn.addEventListener('click', function() {
+                    const reason = skipReasonInput.value.trim();
+                    if (reason) {
+                        skipTemplateWithReason(reason);
+                    }
+                });
+                
+                // Close modal when clicking outside
+                skipModal.addEventListener('click', function(e) {
+                    if (e.target === skipModal) {
+                        hideSkipModal();
+                    }
+                });
+                
+                // Close modal on Escape key
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && skipModal.style.display === 'block') {
+                        hideSkipModal();
+                    }
+                });
+            }
+            
+            // Initialize the app
+            setupModalEventListeners();
+            init();
+        });
+    </script>
+
+    <!-- Skip Reason Modal -->
+    <div id="skipModal" class="skip-modal">
+        <div class="skip-modal-content">
+            <h3>⚠️ Why is this template not applicable?</h3>
+            <p>Please provide a brief explanation of why this template is not relevant to your cultural context:</p>
+            <textarea 
+                id="skipReasonInput" 
+                class="skip-reason-input" 
+                placeholder="Example: This scenario is not common in my culture, or the context doesn't apply to my cultural background..."
+                maxlength="500"
+            ></textarea>
+            <div class="skip-modal-buttons">
+                <button id="skipCancelBtn" class="skip-modal-btn skip-cancel-btn">Cancel</button>
+                <button id="skipConfirmBtn" class="skip-modal-btn skip-confirm-btn" disabled>Skip Template</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

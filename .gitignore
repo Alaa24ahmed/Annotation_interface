@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Environment variables (contains secrets)
+.env
+.env.local
+.env.production
+
+# System files
+.DS_Store
+.vscode/
+npm-debug.log
+*.log
+
+# Database files (optional - you might want to keep templates.csv)
+# data/
+
+# Build artifacts
+dist/
+build/
+
+# Temporary files
+*.tmp
+*.temp
+
+# IDE files
+.idea/
+*.swp
+*.swo
