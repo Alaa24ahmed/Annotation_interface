@@ -893,6 +893,28 @@
                 return 'fallback_' + btoa(fingerprintString).replace(/[^a-zA-Z0-9]/g, '').substring(0, 12);
             }
             
+            // Get or create consistent device fingerprint
+            async function getConsistentFingerprint() {
+                // First check if we have a stored fingerprint for this user
+                const userId = getUserId();
+                const storedFingerprintKey = `fingerprint_${userId}`;
+                const storedFingerprint = localStorage.getItem(storedFingerprintKey);
+                
+                if (storedFingerprint) {
+                    console.log('Using stored fingerprint for user:', userId);
+                    return storedFingerprint;
+                }
+                
+                // Generate new fingerprint
+                const newFingerprint = await generateDeviceFingerprint();
+                
+                // Store it for this user
+                localStorage.setItem(storedFingerprintKey, newFingerprint);
+                console.log('Generated and stored new fingerprint for user:', userId);
+                
+                return newFingerprint;
+            }
+            
             // Get user ID (Prolific-ready)
             function getUserId() {
                 // Check for Prolific ID first
@@ -926,7 +948,7 @@
             // Initialize user identification (async)
             async function initUserIdentification() {
                 currentUserId = getUserId();
-                deviceFingerprint = await generateDeviceFingerprint();
+                deviceFingerprint = await getConsistentFingerprint();
                 
                 console.log('User identification complete:', {
                     userId: currentUserId,
@@ -1022,6 +1044,10 @@
                     // Continue with existing init even if fingerprinting fails
                     currentUserId = getUserId();
                     deviceFingerprint = 'error_' + Date.now();
+                    
+                    // Store the error fingerprint for consistency
+                    const storedFingerprintKey = `fingerprint_${currentUserId}`;
+                    localStorage.setItem(storedFingerprintKey, deviceFingerprint);
                     
                     // Show loading state
                     loadingDiv.style.display = 'block';
