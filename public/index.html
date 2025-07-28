@@ -968,6 +968,25 @@
                 element.style.animationPlayState = 'paused';
                 observer.observe(element);
             });
+            
+            // Handle PILOT_ID parameter passing
+            const urlParams = new URLSearchParams(window.location.search);
+            const pilotId = urlParams.get('PILOT_ID');
+            
+            if (pilotId && (pilotId === '1' || pilotId === '2')) {
+                console.log('Pilot ID detected on homepage:', pilotId);
+                
+                // Update all annotation links to include the PILOT_ID parameter
+                const annotationLinks = document.querySelectorAll('a[href="/annotate"]');
+                annotationLinks.forEach(link => {
+                    link.href = `/annotate.html?PILOT_ID=${pilotId}`;
+                    console.log('Updated link to:', link.href);
+                });
+                
+                // Show debug info for pilot users
+                const demographics = pilotId === '1' ? 'Chinese, China' : 'Indonesian, Indonesia';
+                console.log(`Pilot user ${pilotId} detected - Demographics: ${demographics}`);
+            }
         });
     </script>
 </body>

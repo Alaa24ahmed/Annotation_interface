@@ -707,11 +707,11 @@
             <h3>Steps to Complete <span class="toggle-directions" title="Click to expand/collapse">[?]</span></h3>
             <div class="directions-content">
                 <ol class="directions-list">
-                    <li>Examine template format</li>
-                    <li>Look at the example completed question</li>
+                    <li>Examine template format.</li>
+                    <li>Look at the example completed question.</li>
                     <li>Fill in the placeholders to form a new question that reflects your culture (in English)</li>
                     <li>Provide translations in your own language.</li>
-                    <li>Review and submit</li>
+                    <li>Review and submit.</li>
                 </ol>
             </div>
         </div>
@@ -917,13 +917,18 @@
             
             // Pilot test user demographics mapping
             function getPilotUserDemographics(userId) {
+                console.log('getPilotUserDemographics called with userId:', userId, 'type:', typeof userId);
+                
                 // Two specific pilot IDs for testing
                 if (userId === '1') {
+                    console.log('Matched pilot ID 1 - returning Chinese demographics');
                     return { language: 'Chinese', country: 'China' };
                 } else if (userId === '2') {
+                    console.log('Matched pilot ID 2 - returning Indonesian demographics');
                     return { language: 'Indonesian', country: 'Indonesia' };
                 }
                 
+                console.log('No pilot ID match - returning null demographics');
                 return { language: null, country: null };
             }
             
@@ -933,16 +938,20 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 const pilotId = urlParams.get('PILOT_ID');
                 
+                console.log('URL params:', window.location.search);
+                console.log('Extracted pilot ID:', pilotId, 'type:', typeof pilotId);
+                
                 if (pilotId && (pilotId === '1' || pilotId === '2')) {
-                    console.log('Pilot user detected:', pilotId);
+                    console.log('Valid pilot user detected:', pilotId);
                     localStorage.setItem('pilotId', pilotId);
                     return pilotId;
                 }
                 
                 // Check if we have stored Pilot ID
                 const storedPilotId = localStorage.getItem('pilotId');
+                console.log('Stored pilot ID:', storedPilotId);
                 if (storedPilotId && (storedPilotId === '1' || storedPilotId === '2')) {
-                    console.log('Returning pilot user:', storedPilotId);
+                    console.log('Returning stored pilot user:', storedPilotId);
                     return storedPilotId;
                 }
                 
@@ -994,7 +1003,7 @@
                 window.userDemographics = demographics;
                 
                 // Show debug info for testing
-                // showDebugInfo(); // Hidden for production
+                showDebugInfo(); // Enabled for debugging
             }
             
             // Show debug info on page for testing
