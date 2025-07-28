@@ -915,10 +915,38 @@
                 return newFingerprint;
             }
             
-            // Get user ID (Prolific-ready)
+            // Pilot test user demographics mapping
+            function getPilotUserDemographics(userId) {
+                // Two specific pilot IDs for testing
+                if (userId === '1') {
+                    return { language: 'Chinese', country: 'China' };
+                } else if (userId === '2') {
+                    return { language: 'Indonesian', country: 'Indonesia' };
+                }
+                
+                return { language: null, country: null };
+            }
+            
+            // Get user ID (Prolific-ready + Pilot test ready)
             function getUserId() {
-                // Check for Prolific ID first
+                // Check for Pilot ID first (for testing)
                 const urlParams = new URLSearchParams(window.location.search);
+                const pilotId = urlParams.get('PILOT_ID');
+                
+                if (pilotId && (pilotId === '1' || pilotId === '2')) {
+                    console.log('Pilot user detected:', pilotId);
+                    localStorage.setItem('pilotId', pilotId);
+                    return pilotId;
+                }
+                
+                // Check if we have stored Pilot ID
+                const storedPilotId = localStorage.getItem('pilotId');
+                if (storedPilotId && (storedPilotId === '1' || storedPilotId === '2')) {
+                    console.log('Returning pilot user:', storedPilotId);
+                    return storedPilotId;
+                }
+                
+                // Check for Prolific ID second
                 const prolificPID = urlParams.get('PROLIFIC_PID');
                 
                 if (prolificPID) {
@@ -950,11 +978,20 @@
                 currentUserId = getUserId();
                 deviceFingerprint = await getConsistentFingerprint();
                 
+                // Get user demographics
+                const demographics = getPilotUserDemographics(currentUserId);
+                
                 console.log('User identification complete:', {
                     userId: currentUserId,
                     fingerprint: deviceFingerprint,
+                    language: demographics.language,
+                    country: demographics.country,
+                    isPilotUser: currentUserId === '1' || currentUserId === '2',
                     isProlificUser: currentUserId.startsWith('6') || currentUserId.startsWith('5')
                 });
+                
+                // Store demographics globally for use in submissions
+                window.userDemographics = demographics;
                 
                 // Show debug info for testing
                 // showDebugInfo(); // Hidden for production
@@ -979,10 +1016,16 @@
                 `;
                 
                 const isProlific = currentUserId.startsWith('6') || currentUserId.startsWith('5');
+                const demographics = getPilotUserDemographics(currentUserId);
+                const isPilot = currentUserId === '1' || currentUserId === '2';
+                const userType = isPilot ? 'Pilot' : (isProlific ? 'Prolific' : 'Development');
+                
                 debugDiv.innerHTML = `
                     <strong>🔍 User Debug Info</strong><br>
                     <strong>User ID:</strong> ${currentUserId}<br>
-                    <strong>Type:</strong> ${isProlific ? 'Prolific' : 'Development'}<br>
+                    <strong>Type:</strong> ${userType}<br>
+                    <strong>Language:</strong> ${demographics.language || 'Unknown'}<br>
+                    <strong>Country:</strong> ${demographics.country || 'Unknown'}<br>
                     <strong>Fingerprint:</strong> ${deviceFingerprint}<br>
                     <button onclick="document.getElementById('debug-info').style.display='none'" style="margin-top: 5px;">Hide</button>
                 `;
@@ -1574,6 +1617,9 @@
                     console.error("Option D is empty!");
                 }
                 
+                // Get user demographics
+                const demographics = window.userDemographics || getPilotUserDemographics(currentUserId);
+                
                 // Collect the question data
                 const questionData = {
                     template_id: currentTemplate.id,
@@ -1599,7 +1645,11 @@
                     // Add user tracking data
                     user_id: currentUserId,
                     device_fingerprint: deviceFingerprint,
-                    is_prolific_user: currentUserId.startsWith('6') || currentUserId.startsWith('5')
+                    is_prolific_user: currentUserId.startsWith('6') || currentUserId.startsWith('5'),
+                    
+                    // Add demographics data
+                    language: demographics.language,
+                    country: demographics.country
                 };
                 
                 // Collect placeholder values
@@ -1701,6 +1751,7 @@
                         });
                         
                         // Send skip data to server for analytics
+                        const demographics = window.userDemographics || getPilotUserDemographics(currentUserId);
                         const skipData = {
                             template_id: currentTemplate.id,
                             reasoning_category: currentTemplate.reasoning_category,
@@ -1709,7 +1760,11 @@
                             user_id: currentUserId,
                             device_fingerprint: deviceFingerprint,
                             is_prolific_user: currentUserId && (currentUserId.startsWith('6') || currentUserId.startsWith('5')),
-                            skip_reason: reason
+                            skip_reason: reason,
+                            
+                            // Add demographics data
+                            language: demographics.language,
+                            country: demographics.country
                         };
                         
                         try {
