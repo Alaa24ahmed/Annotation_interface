@@ -33,7 +33,7 @@ exports.saveAnnotation = async (req, res) => {
       } = req.body;
       
       // Determine user type for logging
-      const isPilotUser = user_id === '1' || user_id === '2';
+      const isPilotUser = user_id === '1' || user_id === '2' || user_id === '3';
       const isProlificUser = user_id && (user_id.startsWith('6') || user_id.startsWith('5'));
       
       if (!template_id) {
@@ -177,7 +177,7 @@ exports.logTemplateSkip = async (req, res) => {
     } = req.body;
     
     // Determine user type for logging
-    const isPilotUser = user_id === '1' || user_id === '2';
+    const isPilotUser = user_id === '1' || user_id === '2' || user_id === '3';
     const isProlificUser = user_id && (user_id.startsWith('6') || user_id.startsWith('5'));
     
     // Validate required fields
