@@ -26,8 +26,15 @@ exports.saveAnnotation = async (req, res) => {
         // Add new user tracking fields
         user_id,
         device_fingerprint,
-        is_prolific_user
+        is_prolific_user,
+        // Add demographics data
+        language,
+        country
       } = req.body;
+      
+      // Determine user type for logging
+      const isPilotUser = user_id === '1' || user_id === '2';
+      const isProlificUser = user_id && (user_id.startsWith('6') || user_id.startsWith('5'));
       
       if (!template_id) {
         return res.status(400).json({ error: 'Missing template ID' });
@@ -97,7 +104,10 @@ exports.saveAnnotation = async (req, res) => {
         user_id,
         device_fingerprint,
         user_ip,
-        is_prolific_user: is_prolific_user || false
+        is_prolific_user: isProlificUser,
+        // Add demographics data
+        language: language || null,
+        country: country || null
       };
       
       console.log("Inserting into Supabase:", payload);
@@ -113,8 +123,8 @@ exports.saveAnnotation = async (req, res) => {
       }
       
       // Log user type and info
-      const userType = is_prolific_user ? 'Prolific' : 'Development';
-      console.log(`${userType} annotation saved - User: ${user_id}, Fingerprint: ${device_fingerprint}, IP: ${user_ip}`);
+      const userType = isPilotUser ? 'Pilot' : (isProlificUser ? 'Prolific' : 'Development');
+      console.log(`${userType} annotation saved - User: ${user_id}, Language: ${language}, Country: ${country}, Fingerprint: ${device_fingerprint}, IP: ${user_ip}`);
       
       console.log("Successfully saved to Supabase");
       res.status(201).json({ 
@@ -160,8 +170,15 @@ exports.logTemplateSkip = async (req, res) => {
       user_id,
       device_fingerprint,
       is_prolific_user,
-      skip_reason
+      skip_reason,
+      // Add demographics fields
+      language,
+      country
     } = req.body;
+    
+    // Determine user type for logging
+    const isPilotUser = user_id === '1' || user_id === '2';
+    const isProlificUser = user_id && (user_id.startsWith('6') || user_id.startsWith('5'));
     
     // Validate required fields
     if (!template_id || !user_id || !device_fingerprint || !skip_reason) {
@@ -189,8 +206,10 @@ exports.logTemplateSkip = async (req, res) => {
       user_id,
       device_fingerprint,
       user_ip,
-      is_prolific_user: is_prolific_user || false,
-      skip_reason: skip_reason.trim()
+      is_prolific_user: isProlificUser,
+      skip_reason: skip_reason.trim(),
+      language: language || null,
+      country: country || null
     };
     
     console.log("Saving template skip to database:", skipPayload);
@@ -205,7 +224,7 @@ exports.logTemplateSkip = async (req, res) => {
       throw error;
     }
     
-    const userType = is_prolific_user ? 'Prolific' : 'Development';
+    const userType = isPilotUser ? 'Pilot' : (isProlificUser ? 'Prolific' : 'Development');
     console.log(`${userType} template skipped and saved - User: ${user_id}, Template: ${template_id}, Reason: ${skip_reason.substring(0, 50)}..., IP: ${user_ip}`);
     
     res.status(200).json({ 
