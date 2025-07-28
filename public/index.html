@@ -973,7 +973,7 @@
             const urlParams = new URLSearchParams(window.location.search);
             const pilotId = urlParams.get('PILOT_ID');
             
-            if (pilotId && (pilotId === '1' || pilotId === '2')) {
+            if (pilotId && (pilotId === '1' || pilotId === '2' || pilotId === '3')) {
                 console.log('Pilot ID detected on homepage:', pilotId);
                 
                 // Update all annotation links to include the PILOT_ID parameter
@@ -984,7 +984,14 @@
                 });
                 
                 // Show debug info for pilot users
-                const demographics = pilotId === '1' ? 'Chinese, China' : 'Indonesian, Indonesia';
+                let demographics;
+                if (pilotId === '1') {
+                    demographics = 'Chinese, China';
+                } else if (pilotId === '2') {
+                    demographics = 'Indonesian, Indonesia';
+                } else if (pilotId === '3') {
+                    demographics = 'Egyptian Arabic, Egypt';
+                }
                 console.log(`Pilot user ${pilotId} detected - Demographics: ${demographics}`);
             }
         });

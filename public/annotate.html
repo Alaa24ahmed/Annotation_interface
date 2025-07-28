@@ -919,13 +919,16 @@
             function getPilotUserDemographics(userId) {
                 console.log('getPilotUserDemographics called with userId:', userId, 'type:', typeof userId);
                 
-                // Two specific pilot IDs for testing
+                // Three specific pilot IDs for testing
                 if (userId === '1') {
                     console.log('Matched pilot ID 1 - returning Chinese demographics');
                     return { language: 'Chinese', country: 'China' };
                 } else if (userId === '2') {
                     console.log('Matched pilot ID 2 - returning Indonesian demographics');
                     return { language: 'Indonesian', country: 'Indonesia' };
+                } else if (userId === '3') {
+                    console.log('Matched pilot ID 3 - returning Egyptian Arabic demographics');
+                    return { language: 'Egyptian Arabic', country: 'Egypt' };
                 }
                 
                 console.log('No pilot ID match - returning null demographics');
@@ -941,7 +944,7 @@
                 console.log('URL params:', window.location.search);
                 console.log('Extracted pilot ID:', pilotId, 'type:', typeof pilotId);
                 
-                if (pilotId && (pilotId === '1' || pilotId === '2')) {
+                if (pilotId && (pilotId === '1' || pilotId === '2' || pilotId === '3')) {
                     console.log('Valid pilot user detected:', pilotId);
                     localStorage.setItem('pilotId', pilotId);
                     return pilotId;
@@ -950,7 +953,7 @@
                 // Check if we have stored Pilot ID
                 const storedPilotId = localStorage.getItem('pilotId');
                 console.log('Stored pilot ID:', storedPilotId);
-                if (storedPilotId && (storedPilotId === '1' || storedPilotId === '2')) {
+                if (storedPilotId && (storedPilotId === '1' || storedPilotId === '2' || storedPilotId === '3')) {
                     console.log('Returning stored pilot user:', storedPilotId);
                     return storedPilotId;
                 }
@@ -995,7 +998,7 @@
                     fingerprint: deviceFingerprint,
                     language: demographics.language,
                     country: demographics.country,
-                    isPilotUser: currentUserId === '1' || currentUserId === '2',
+                    isPilotUser: currentUserId === '1' || currentUserId === '2' || currentUserId === '3',
                     isProlificUser: currentUserId.startsWith('6') || currentUserId.startsWith('5')
                 });
                 
@@ -1003,7 +1006,7 @@
                 window.userDemographics = demographics;
                 
                 // Show debug info for testing
-                showDebugInfo(); // Enabled for debugging
+                // showDebugInfo(); // Hidden for production
             }
             
             // Show debug info on page for testing
@@ -1026,7 +1029,7 @@
                 
                 const isProlific = currentUserId.startsWith('6') || currentUserId.startsWith('5');
                 const demographics = getPilotUserDemographics(currentUserId);
-                const isPilot = currentUserId === '1' || currentUserId === '2';
+                const isPilot = currentUserId === '1' || currentUserId === '2' || currentUserId === '3';
                 const userType = isPilot ? 'Pilot' : (isProlific ? 'Prolific' : 'Development');
                 
                 debugDiv.innerHTML = `
