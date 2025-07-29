@@ -1280,21 +1280,36 @@
                                 placeholder.click(); // This will convert it to input
                                 setTimeout(() => {
                                     const input = document.querySelector(`input[data-placeholder-id="${placeholderId}"]`);
-                                    if (input) {
+                                    if (input && progress.inputs[placeholderId]) {
                                         input.value = progress.inputs[placeholderId];
+                                        // Trigger input event to ensure validation sees the change
+                                        input.dispatchEvent(new Event('input', { bubbles: true }));
                                     }
                                 }, 50);
                             } else if (placeholder && placeholder.tagName === 'INPUT') {
                                 // Already an input, just fill it
-                                placeholder.value = progress.inputs[placeholderId];
+                                if (progress.inputs[placeholderId]) {
+                                    placeholder.value = progress.inputs[placeholderId];
+                                    // Trigger input event to ensure validation sees the change
+                                    placeholder.dispatchEvent(new Event('input', { bubbles: true }));
+                                }
                             }
                         });
                         
-                        // Validate after restoring
+                        // Validate after restoring with multiple attempts to ensure all inputs are processed
                         setTimeout(() => {
+                            console.log('First validation attempt after restore...');
                             validateAnnotation();
                             updateProgressBasedOnCompleteness();
-                        }, 100);
+                        }, 200);
+                        
+                        // Second validation attempt with longer delay
+                        setTimeout(() => {
+                            console.log('Second validation attempt after restore...');
+                            validateAnnotation();
+                            updateProgressBasedOnCompleteness();
+                            console.log('Template progress restored and validation completed');
+                        }, 500);
                     }, 100);
                     
                 } catch (error) {
@@ -1447,6 +1462,13 @@
                 // Restore any saved progress for this template
                 restoreTemplateProgress();
                 
+                // Add a small delay and re-validate to ensure everything is properly restored
+                setTimeout(() => {
+                    console.log('Final validation check after template load...');
+                    validateAnnotation();
+                    updateProgressBasedOnCompleteness();
+                }, 1000);
+                
                 // Initial validation
                 validateAnnotation();
             }
@@ -1541,19 +1563,26 @@
                 let isValid = true;
                 let missingFields = [];
                 
+                console.log('Validation check - Placeholders:', placeholders.length, 'Inputs:', inputs.length);
+                
                 // Check if any placeholders are still visible (not converted to inputs)
                 if (placeholders.length > 0) {
                     isValid = false;
                     placeholders.forEach(placeholder => {
-                        missingFields.push(placeholder.getAttribute('data-placeholder-id'));
+                        const placeholderId = placeholder.getAttribute('data-placeholder-id');
+                        console.log('Missing placeholder (not filled):', placeholderId);
+                        missingFields.push(placeholderId);
                     });
                 }
                 
                 // Check if any inputs are empty
                 inputs.forEach(input => {
-                    if (!input.value || input.value.trim() === '') {
+                    const placeholderId = input.getAttribute('data-placeholder-id');
+                    const value = input.value ? input.value.trim() : '';
+                    console.log(`Input ${placeholderId}: "${value}" (empty: ${!value})`);
+                    if (!value) {
                         isValid = false;
-                        missingFields.push(input.getAttribute('data-placeholder-id'));
+                        missingFields.push(placeholderId);
                     }
                 });
                 
@@ -1567,11 +1596,15 @@
                 ];
                 
                 translationFields.forEach(field => {
-                    if (!field.elem.value || field.elem.value.trim() === '') {
+                    const value = field.elem.value ? field.elem.value.trim() : '';
+                    console.log(`${field.name}: "${value}" (empty: ${!value})`);
+                    if (!value) {
                         isValid = false;
                         missingFields.push(field.name);
                     }
                 });
+                
+                console.log('Validation result - Valid:', isValid, 'Missing:', missingFields);
                 
                 // Update submit button state
                 submitBtn.disabled = !isValid;
