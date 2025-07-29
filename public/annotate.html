@@ -1006,7 +1006,7 @@
                 window.userDemographics = demographics;
                 
                 // Show debug info for testing
-                // showDebugInfo(); // Hidden for production
+                showDebugInfo(); // Enabled for debugging validation issues
             }
             
             // Show debug info on page for testing
@@ -1039,10 +1039,18 @@
                     <strong>Language:</strong> ${demographics.language || 'Unknown'}<br>
                     <strong>Country:</strong> ${demographics.country || 'Unknown'}<br>
                     <strong>Fingerprint:</strong> ${deviceFingerprint}<br>
+                    <button onclick="window.debugValidation()" style="margin-top: 5px; width: 100%;">🔍 Check Validation</button><br>
                     <button onclick="document.getElementById('debug-info').style.display='none'" style="margin-top: 5px;">Hide</button>
                 `;
                 
                 document.body.appendChild(debugDiv);
+                
+                // Add global debug validation function
+                window.debugValidation = function() {
+                    console.log('🚨 MANUAL VALIDATION CHECK TRIGGERED');
+                    const result = validateAnnotation();
+                    alert(`Validation Result: ${result ? 'VALID ✅' : 'INVALID ❌'}\nSubmit button: ${submitBtn.disabled ? 'DISABLED' : 'ENABLED'}`);
+                };
             }
             
             // Initialize the application
@@ -1558,19 +1566,36 @@
             
             // Validation function to check if all fields are filled
             function validateAnnotation() {
+                console.log('🔍 VALIDATION START - Current time:', new Date().toISOString());
+                
                 const placeholders = document.querySelectorAll('.placeholder');
                 const inputs = document.querySelectorAll('input[data-placeholder-id]');
                 let isValid = true;
                 let missingFields = [];
                 
-                console.log('Validation check - Placeholders:', placeholders.length, 'Inputs:', inputs.length);
+                console.log('📊 DOM State - Placeholders:', placeholders.length, 'Inputs:', inputs.length);
+                console.log('🎯 Submit button current state - Disabled:', submitBtn.disabled);
+                
+                // Debug: List all placeholders found
+                placeholders.forEach((placeholder, index) => {
+                    const id = placeholder.getAttribute('data-placeholder-id');
+                    const text = placeholder.textContent;
+                    console.log(`🔸 Placeholder ${index + 1}: ID="${id}", Text="${text}"`);
+                });
+                
+                // Debug: List all inputs found
+                inputs.forEach((input, index) => {
+                    const id = input.getAttribute('data-placeholder-id');
+                    const value = input.value || '';
+                    console.log(`🔹 Input ${index + 1}: ID="${id}", Value="${value}", Filled=${!!value.trim()}`);
+                });
                 
                 // Check if any placeholders are still visible (not converted to inputs)
                 if (placeholders.length > 0) {
                     isValid = false;
                     placeholders.forEach(placeholder => {
                         const placeholderId = placeholder.getAttribute('data-placeholder-id');
-                        console.log('Missing placeholder (not filled):', placeholderId);
+                        console.log('❌ Missing placeholder (not filled):', placeholderId);
                         missingFields.push(placeholderId);
                     });
                 }
@@ -1579,7 +1604,7 @@
                 inputs.forEach(input => {
                     const placeholderId = input.getAttribute('data-placeholder-id');
                     const value = input.value ? input.value.trim() : '';
-                    console.log(`Input ${placeholderId}: "${value}" (empty: ${!value})`);
+                    console.log(`🔍 Input "${placeholderId}": "${value}" (empty: ${!value})`);
                     if (!value) {
                         isValid = false;
                         missingFields.push(placeholderId);
@@ -1588,34 +1613,49 @@
                 
                 // Check if all translation fields are provided
                 const translationFields = [
-                    { elem: translationQuestion, name: 'Question Translation' },
-                    { elem: translationOptionA, name: 'Option A Translation' },
-                    { elem: translationOptionB, name: 'Option B Translation' },
-                    { elem: translationOptionC, name: 'Option C Translation' },
-                    { elem: translationOptionD, name: 'Option D Translation' }
+                    { elem: translationQuestion, name: 'Question Translation', id: 'translation-question' },
+                    { elem: translationOptionA, name: 'Option A Translation', id: 'translation-option-a' },
+                    { elem: translationOptionB, name: 'Option B Translation', id: 'translation-option-b' },
+                    { elem: translationOptionC, name: 'Option C Translation', id: 'translation-option-c' },
+                    { elem: translationOptionD, name: 'Option D Translation', id: 'translation-option-d' }
                 ];
                 
+                console.log('📝 Checking translation fields:');
                 translationFields.forEach(field => {
                     const value = field.elem.value ? field.elem.value.trim() : '';
-                    console.log(`${field.name}: "${value}" (empty: ${!value})`);
-                    if (!value) {
+                    const isEmpty = !value;
+                    console.log(`  📄 ${field.name} (${field.id}): "${value}" (empty: ${isEmpty})`);
+                    if (isEmpty) {
                         isValid = false;
                         missingFields.push(field.name);
                     }
                 });
                 
-                console.log('Validation result - Valid:', isValid, 'Missing:', missingFields);
+                console.log('🏁 Validation Summary:');
+                console.log('  ✅ Valid:', isValid);
+                console.log('  ❌ Missing fields:', missingFields);
+                console.log('  🔢 Missing count:', missingFields.length);
                 
                 // Update submit button state
+                const previousDisabled = submitBtn.disabled;
                 submitBtn.disabled = !isValid;
+                
+                console.log('🎯 Submit button update:');
+                console.log('  Previous state:', previousDisabled ? 'DISABLED' : 'ENABLED');
+                console.log('  New state:', submitBtn.disabled ? 'DISABLED' : 'ENABLED');
+                console.log('  State changed:', previousDisabled !== submitBtn.disabled);
                 
                 // Update tooltip
                 if (!isValid) {
                     const tooltip = `Please complete: ${missingFields.join(', ')}`;
                     submitBtn.setAttribute('data-tooltip', tooltip);
+                    console.log('🏷️ Tooltip set:', tooltip);
                 } else {
                     submitBtn.setAttribute('data-tooltip', '');
+                    console.log('🏷️ Tooltip cleared');
                 }
+                
+                console.log('🔍 VALIDATION END ========================================\n');
                 
                 return isValid;
             }
