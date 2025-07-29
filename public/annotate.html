@@ -1238,13 +1238,13 @@
                     
                     console.log('� Restoring progress:', progress);
                     
-                    // Restore translation fields immediately
-                    if (data.translations) {
-                        translationQuestion.value = data.translations.question || '';
-                        translationOptionA.value = data.translations.optionA || '';
-                        translationOptionB.value = data.translations.optionB || '';
-                        translationOptionC.value = data.translations.optionC || '';
-                        translationOptionD.value = data.translations.optionD || '';
+                    // Restore translation fields
+                    if (data.translationQuestion || data.translationOptionA || data.translationOptionB || data.translationOptionC || data.translationOptionD) {
+                        translationQuestion.value = data.translationQuestion || '';
+                        translationOptionA.value = data.translationOptionA || '';
+                        translationOptionB.value = data.translationOptionB || '';
+                        translationOptionC.value = data.translationOptionC || '';
+                        translationOptionD.value = data.translationOptionD || '';
                         console.log('� Translation fields restored');
                     }
                     
@@ -1252,9 +1252,17 @@
                     if (data.placeholders) {
                         console.log('� Restoring placeholder values:', Object.keys(progress.placeholderValues));
                         
-                        Object.keys(progress.placeholderValues).forEach(placeholderId => {
-                            const value = progress.placeholderValues[placeholderId];
-                            restorePlaceholderValue(placeholderId, value);
+                        Object.entries(data.placeholders).forEach(([id, value]) => {
+                            const span = document.querySelector(`span[data-placeholder-id="${id}"]`);
+                            if (span && value.trim()) {
+                                const input = document.createElement('input');
+                                input.type = 'text';
+                                input.value = value;
+                                input.className = 'placeholder-input';
+                                input.setAttribute('data-placeholder-id', id);
+                                input.addEventListener('input', saveTemplateProgress);
+                                span.parentNode.replaceChild(input, span);
+                            }
                         });
                     }
                     
