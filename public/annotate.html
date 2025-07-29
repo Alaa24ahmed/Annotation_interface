@@ -1236,7 +1236,7 @@
                         return;
                     }
                     
-                    console.log('� Restoring progress:', progress);
+                    console.log('� Restoring progress:', data);
                     
                     // Restore translation fields
                     if (data.translationQuestion || data.translationOptionA || data.translationOptionB || data.translationOptionC || data.translationOptionD) {
@@ -1250,7 +1250,7 @@
                     
                     // Restore placeholder values using a direct approach
                     if (data.placeholders) {
-                        console.log('� Restoring placeholder values:', Object.keys(progress.placeholderValues));
+                        console.log('� Restoring placeholder values:', Object.keys(data.placeholders));
                         
                         Object.entries(data.placeholders).forEach(([id, value]) => {
                             const span = document.querySelector(`span[data-placeholder-id="${id}"]`);
