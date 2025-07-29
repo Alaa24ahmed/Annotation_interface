@@ -1078,6 +1078,7 @@
                         input.addEventListener('input', function() {
                             validateAnnotation();
                             updateProgressBasedOnCompleteness();
+                            saveTemplateProgress(); // Save progress when user types
                         });
                     });
                     
@@ -1160,6 +1161,22 @@
                 try {
                     console.log("Fetching random template from server...");
                     
+                    // Check if we have a stored template for this user that hasn't been completed
+                    const storedTemplateKey = `current_template_${currentUserId}`;
+                    const storedTemplate = localStorage.getItem(storedTemplateKey);
+                    
+                    if (storedTemplate) {
+                        try {
+                            const parsedTemplate = JSON.parse(storedTemplate);
+                            console.log("Found stored template for user, loading:", parsedTemplate.id);
+                            loadTemplate(parsedTemplate);
+                            return;
+                        } catch (parseError) {
+                            console.warn("Failed to parse stored template, fetching new one:", parseError);
+                            localStorage.removeItem(storedTemplateKey);
+                        }
+                    }
+                    
                     // Hide preview if visible
                     previewDiv.style.display = 'none';
                     
@@ -1172,6 +1189,10 @@
                     
                     const template = await response.json();
                     console.log("Received template from server:", template);
+                    
+                    // Store the new template for this user
+                    localStorage.setItem(storedTemplateKey, JSON.stringify(template));
+                    
                     loadTemplate(template);
                 } catch (error) {
                     console.error('Error fetching template:', error);
@@ -1181,6 +1202,104 @@
                     
                     console.log("Using example template as fallback");
                     createExampleTemplate();
+                }
+            }
+            
+            // Clear stored template for user (called after successful submission or skip)
+            function clearStoredTemplate() {
+                const storedTemplateKey = `current_template_${currentUserId}`;
+                const progressKey = `template_progress_${currentUserId}`;
+                localStorage.removeItem(storedTemplateKey);
+                localStorage.removeItem(progressKey);
+                console.log('Cleared stored template and progress for user:', currentUserId);
+            }
+            
+            // Save user progress on current template
+            function saveTemplateProgress() {
+                if (!currentUserId || !currentTemplate) return;
+                
+                const progressKey = `template_progress_${currentUserId}`;
+                const progress = {
+                    templateId: currentTemplate.id,
+                    inputs: {},
+                    translations: {
+                        question: translationQuestion.value,
+                        optionA: translationOptionA.value,
+                        optionB: translationOptionB.value,
+                        optionC: translationOptionC.value,
+                        optionD: translationOptionD.value
+                    },
+                    timestamp: Date.now()
+                };
+                
+                // Save filled placeholder values
+                const inputs = document.querySelectorAll('input[data-placeholder-id]');
+                inputs.forEach(input => {
+                    const id = input.getAttribute('data-placeholder-id');
+                    progress.inputs[id] = input.value;
+                });
+                
+                localStorage.setItem(progressKey, JSON.stringify(progress));
+            }
+            
+            // Restore user progress on current template
+            function restoreTemplateProgress() {
+                if (!currentUserId || !currentTemplate) return;
+                
+                const progressKey = `template_progress_${currentUserId}`;
+                const storedProgress = localStorage.getItem(progressKey);
+                
+                if (!storedProgress) return;
+                
+                try {
+                    const progress = JSON.parse(storedProgress);
+                    
+                    // Only restore if it's for the same template
+                    if (progress.templateId !== currentTemplate.id) {
+                        localStorage.removeItem(progressKey);
+                        return;
+                    }
+                    
+                    console.log('Restoring template progress for user:', currentUserId);
+                    
+                    // Restore translation fields
+                    if (progress.translations) {
+                        translationQuestion.value = progress.translations.question || '';
+                        translationOptionA.value = progress.translations.optionA || '';
+                        translationOptionB.value = progress.translations.optionB || '';
+                        translationOptionC.value = progress.translations.optionC || '';
+                        translationOptionD.value = progress.translations.optionD || '';
+                    }
+                    
+                    // Restore placeholder inputs (we'll need to do this after placeholders are initialized)
+                    setTimeout(() => {
+                        Object.keys(progress.inputs || {}).forEach(placeholderId => {
+                            const placeholder = document.querySelector(`[data-placeholder-id="${placeholderId}"]`);
+                            if (placeholder && placeholder.tagName === 'SPAN') {
+                                // Convert placeholder to input and fill it
+                                placeholder.click(); // This will convert it to input
+                                setTimeout(() => {
+                                    const input = document.querySelector(`input[data-placeholder-id="${placeholderId}"]`);
+                                    if (input) {
+                                        input.value = progress.inputs[placeholderId];
+                                    }
+                                }, 50);
+                            } else if (placeholder && placeholder.tagName === 'INPUT') {
+                                // Already an input, just fill it
+                                placeholder.value = progress.inputs[placeholderId];
+                            }
+                        });
+                        
+                        // Validate after restoring
+                        setTimeout(() => {
+                            validateAnnotation();
+                            updateProgressBasedOnCompleteness();
+                        }, 100);
+                    }, 100);
+                    
+                } catch (error) {
+                    console.warn('Failed to restore template progress:', error);
+                    localStorage.removeItem(progressKey);
                 }
             }
             
@@ -1325,6 +1444,9 @@
                 // Setup placeholder functionality for question and options
                 initPlaceholders();
                 
+                // Restore any saved progress for this template
+                restoreTemplateProgress();
+                
                 // Initial validation
                 validateAnnotation();
             }
@@ -1354,6 +1476,7 @@
                         // Handle input changes
                         input.addEventListener('input', function() {
                             validateAnnotation();
+                            saveTemplateProgress(); // Save progress when user fills placeholders
                         });
                         
                         // Handle input blur
@@ -1394,6 +1517,7 @@
                     
                     input.addEventListener('input', function() {
                         validateAnnotation();
+                        saveTemplateProgress(); // Save progress when user fills placeholders
                     });
                     
                     input.addEventListener('blur', function() {
@@ -1802,6 +1926,9 @@
                     // Hide modal
                     hideSkipModal();
                     
+                    // Clear stored template since skip was successful
+                    clearStoredTemplate();
+                    
                     // Show loading state
                     loadingDiv.style.display = 'block';
                     templateContainer.style.display = 'none';
@@ -1819,6 +1946,7 @@
                     console.error('Error in skipTemplateWithReason:', error);
                     // Still proceed with skip even if there's an error
                     hideSkipModal();
+                    clearStoredTemplate(); // Clear template even on error to avoid being stuck
                     loadingDiv.style.display = 'block';
                     templateContainer.style.display = 'none';
                     statusDiv.className = 'status';
@@ -1857,6 +1985,9 @@
                     
                     // Hide preview panel
                     previewDiv.style.display = 'none';
+                    
+                    // Clear stored template since submission was successful
+                    clearStoredTemplate();
                     
                     // Show success message
                     statusDiv.className = 'status success';
