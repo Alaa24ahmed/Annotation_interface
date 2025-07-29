@@ -969,17 +969,17 @@
                 observer.observe(element);
             });
             
-            // Handle PILOT_ID parameter passing
+            // Handle ID parameter passing
             const urlParams = new URLSearchParams(window.location.search);
-            const pilotId = urlParams.get('PILOT_ID');
+            const pilotId = urlParams.get('ID');
             
             if (pilotId && (pilotId === '1' || pilotId === '2' || pilotId === '3')) {
                 console.log('Pilot ID detected on homepage:', pilotId);
                 
-                // Update all annotation links to include the PILOT_ID parameter
+                // Update all annotation links to include the ID parameter
                 const annotationLinks = document.querySelectorAll('a[href="/annotate"]');
                 annotationLinks.forEach(link => {
-                    link.href = `/annotate.html?PILOT_ID=${pilotId}`;
+                    link.href = `/annotate.html?ID=${pilotId}`;
                     console.log('Updated link to:', link.href);
                 });
                 
