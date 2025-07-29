@@ -939,7 +939,7 @@
             function getUserId() {
                 // Check for Pilot ID first (for testing)
                 const urlParams = new URLSearchParams(window.location.search);
-                const pilotId = urlParams.get('PILOT_ID');
+                const pilotId = urlParams.get('ID');
                 
                 console.log('URL params:', window.location.search);
                 console.log('Extracted pilot ID:', pilotId, 'type:', typeof pilotId);
