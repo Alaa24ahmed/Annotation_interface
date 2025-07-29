@@ -861,34 +861,6 @@
             
             // Current template data
             let currentTemplate = null;
-            let autoSaveInterval = null; // For periodic auto-save
-            
-            // Start auto-save interval
-            function startAutoSave() {
-                // Clear any existing interval
-                if (autoSaveInterval) {
-                    clearInterval(autoSaveInterval);
-                }
-                
-                // Save progress every 3 seconds
-                autoSaveInterval = setInterval(() => {
-                    if (currentUserId && currentTemplate) {
-                        console.log('⏰ Auto-save triggered');
-                        saveTemplateProgress();
-                    }
-                }, 3000);
-                
-                console.log('⏰ Auto-save started (every 3 seconds)');
-            }
-            
-            // Stop auto-save interval
-            function stopAutoSave() {
-                if (autoSaveInterval) {
-                    clearInterval(autoSaveInterval);
-                    autoSaveInterval = null;
-                    console.log('⏰ Auto-save stopped');
-                }
-            }
             
             // Generate device fingerprint using FingerprintJS
             async function generateDeviceFingerprint() {
@@ -1033,105 +1005,7 @@
                 // Store demographics globally for use in submissions
                 window.userDemographics = demographics;
                 
-                // Show debug info for testing
-                showDebugInfo(); // Enabled for debugging validation issues
-            }
-            
-            // Show debug info on page for testing
-            function showDebugInfo() {
-                const debugDiv = document.createElement('div');
-                debugDiv.id = 'debug-info';
-                debugDiv.style.cssText = `
-                    position: fixed; 
-                    top: 10px; 
-                    right: 10px; 
-                    background: #f8f9fa; 
-                    border: 1px solid #dee2e6; 
-                    padding: 10px; 
-                    border-radius: 5px; 
-                    font-family: monospace; 
-                    font-size: 11px; 
-                    z-index: 1000;
-                    max-width: 300px;
-                `;
-                
-                const isProlific = currentUserId.startsWith('6') || currentUserId.startsWith('5');
-                const demographics = getPilotUserDemographics(currentUserId);
-                const isPilot = currentUserId === '1' || currentUserId === '2' || currentUserId === '3';
-                const userType = isPilot ? 'Pilot' : (isProlific ? 'Prolific' : 'Development');
-                
-                debugDiv.innerHTML = `
-                    <strong>🔍 User Debug Info</strong><br>
-                    <strong>User ID:</strong> ${currentUserId}<br>
-                    <strong>Type:</strong> ${userType}<br>
-                    <strong>Language:</strong> ${demographics.language || 'Unknown'}<br>
-                    <strong>Country:</strong> ${demographics.country || 'Unknown'}<br>
-                    <strong>Fingerprint:</strong> ${deviceFingerprint}<br>
-                    <button onclick="window.debugValidation()" style="margin-top: 5px; width: 100%;">🔍 Check Validation</button><br>
-                    <button onclick="window.debugSaveProgress()" style="margin-top: 2px; width: 100%;">💾 Save Progress Now</button><br>
-                    <button onclick="window.debugRestoreProgress()" style="margin-top: 2px; width: 100%;">📂 Restore Progress</button><br>
-                    <button onclick="window.debugLocalStorage()" style="margin-top: 2px; width: 100%;">🗂️ Check LocalStorage</button><br>
-                    <button onclick="document.getElementById('debug-info').style.display='none'" style="margin-top: 5px;">Hide</button>
-                `;
-                
-                document.body.appendChild(debugDiv);
-                
-                // Add global debug validation function
-                window.debugValidation = function() {
-                    console.log('🚨 MANUAL VALIDATION CHECK TRIGGERED');
-                    const result = validateAnnotation();
-                    alert(`Validation Result: ${result ? 'VALID ✅' : 'INVALID ❌'}\nSubmit button: ${submitBtn.disabled ? 'DISABLED' : 'ENABLED'}`);
-                };
-                
-                // Add manual save progress function
-                window.debugSaveProgress = function() {
-                    console.log('🚨 MANUAL SAVE PROGRESS TRIGGERED');
-                    saveTemplateProgress();
-                    alert('Progress saved! Check console for details.');
-                };
-                
-                // Add manual restore progress function
-                window.debugRestoreProgress = function() {
-                    console.log('🚨 MANUAL RESTORE PROGRESS TRIGGERED');
-                    restoreTemplateProgress();
-                    alert('Progress restoration attempted! Check console for details.');
-                };
-                
-                // Add localStorage inspection function
-                window.debugLocalStorage = function() {
-                    console.log('🚨 LOCALSTORAGE DEBUG TRIGGERED');
-                    const progressKey = `template_progress_${currentUserId}`;
-                    const templateKey = `current_template_${currentUserId}`;
-                    
-                    console.log('🗂️ Checking localStorage keys:');
-                    console.log('📋 Progress key:', progressKey);
-                    console.log('📄 Template key:', templateKey);
-                    
-                    const progressData = localStorage.getItem(progressKey);
-                    const templateData = localStorage.getItem(templateKey);
-                    
-                    console.log('📋 Progress data:', progressData);
-                    console.log('📄 Template data:', templateData);
-                    
-                    if (progressData) {
-                        try {
-                            const parsed = JSON.parse(progressData);
-                            console.log('📋 Parsed progress:', parsed);
-                            console.log('📋 Placeholder values:', Object.keys(parsed.placeholderValues || {}));
-                            Object.keys(parsed.placeholderValues || {}).forEach(key => {
-                                console.log(`  📝 ${key}: "${parsed.placeholderValues[key]}"`);
-                            });
-                            console.log('📋 Translation values:');
-                            Object.keys(parsed.translations || {}).forEach(key => {
-                                console.log(`  📄 ${key}: "${parsed.translations[key]}"`);
-                            });
-                        } catch (e) {
-                            console.error('📋 Failed to parse progress data:', e);
-                        }
-                    }
-                    
-                    alert('LocalStorage data logged to console!');
-                };
+                // Debug removed for cleaner production code
             }
             
             // Initialize the application
@@ -1301,12 +1175,9 @@
                 localStorage.removeItem(storedTemplateKey);
                 localStorage.removeItem(progressKey);
                 console.log('Cleared stored template and progress for user:', currentUserId);
-                
-                // Stop auto-save when template is cleared
-                stopAutoSave();
             }
             
-            // Save user progress on current template - SIMPLIFIED VERSION
+            // Save progress - simple and reliable
             function saveTemplateProgress() {
                 if (!currentUserId || !currentTemplate) {
                     console.log('💾 Cannot save: missing userId or template');
@@ -1314,44 +1185,30 @@
                 }
                 
                 const progressKey = `template_progress_${currentUserId}`;
-                const progress = {
+                const data = {
                     templateId: currentTemplate.id,
-                    placeholderValues: {}, // Store actual values, not DOM state
-                    translations: {
-                        question: translationQuestion.value,
-                        optionA: translationOptionA.value,
-                        optionB: translationOptionB.value,
-                        optionC: translationOptionC.value,
-                        optionD: translationOptionD.value
-                    },
-                    timestamp: Date.now()
+                    timestamp: Date.now(),
+                    // Translation fields
+                    translationQuestion: translationQuestion.value || '',
+                    translationOptionA: translationOptionA.value || '',
+                    translationOptionB: translationOptionB.value || '',
+                    translationOptionC: translationOptionC.value || '',
+                    translationOptionD: translationOptionD.value || '',
+                    // Placeholder fields
+                    placeholders: {}
                 };
                 
-                // Collect ALL placeholder values by scanning both inputs AND data attributes
-                const allElements = document.querySelectorAll('[data-placeholder-id]');
-                console.log('💾 Found elements with placeholder IDs:', allElements.length);
-                
-                allElements.forEach((element, index) => {
-                    const id = element.getAttribute('data-placeholder-id');
-                    let value = '';
-                    
-                    if (element.tagName === 'INPUT') {
-                        value = element.value || '';
-                    } else if (element.tagName === 'SPAN' && element.hasAttribute('data-filled-value')) {
-                        // If it's a span but has a stored value
-                        value = element.getAttribute('data-filled-value') || '';
-                    }
-                    
+                // Get values from input elements only
+                document.querySelectorAll('input[data-placeholder-id]').forEach(input => {
+                    const id = input.getAttribute('data-placeholder-id');
+                    const value = input.value || '';
                     if (value.trim()) {
-                        progress.placeholderValues[id] = value.trim();
-                        console.log(`💾 Saved: ${id} = "${value}"`);
+                        data.placeholders[id] = value.trim();
                     }
                 });
                 
-                console.log('💾 Total saved values:', Object.keys(progress.placeholderValues).length);
-                localStorage.setItem(progressKey, JSON.stringify(progress));
-                
-                return progress; // Return for debugging
+                localStorage.setItem(progressKey, JSON.stringify(data));
+                console.log('💾 Progress saved:', Object.keys(data.placeholders).length, 'placeholders');
             }
             
             // Restore user progress - SIMPLIFIED VERSION
@@ -1370,10 +1227,10 @@
                 }
                 
                 try {
-                    const progress = JSON.parse(storedProgress);
+                    const data = JSON.parse(storedProgress);
                     
                     // Only restore if it's for the same template
-                    if (progress.templateId !== currentTemplate.id) {
+                    if (data.templateId !== currentTemplate.id) {
                         console.log('📂 Template mismatch, clearing old progress');
                         localStorage.removeItem(progressKey);
                         return;
@@ -1382,17 +1239,17 @@
                     console.log('� Restoring progress:', progress);
                     
                     // Restore translation fields immediately
-                    if (progress.translations) {
-                        translationQuestion.value = progress.translations.question || '';
-                        translationOptionA.value = progress.translations.optionA || '';
-                        translationOptionB.value = progress.translations.optionB || '';
-                        translationOptionC.value = progress.translations.optionC || '';
-                        translationOptionD.value = progress.translations.optionD || '';
+                    if (data.translations) {
+                        translationQuestion.value = data.translations.question || '';
+                        translationOptionA.value = data.translations.optionA || '';
+                        translationOptionB.value = data.translations.optionB || '';
+                        translationOptionC.value = data.translations.optionC || '';
+                        translationOptionD.value = data.translations.optionD || '';
                         console.log('� Translation fields restored');
                     }
                     
                     // Restore placeholder values using a direct approach
-                    if (progress.placeholderValues) {
+                    if (data.placeholders) {
                         console.log('� Restoring placeholder values:', Object.keys(progress.placeholderValues));
                         
                         Object.keys(progress.placeholderValues).forEach(placeholderId => {
@@ -1612,8 +1469,9 @@
                 // Setup placeholder functionality for question and options
                 initPlaceholders();
                 
-                // Start auto-save for this template
-                startAutoSave();
+                // Start auto-save for this template - DISABLED FOR TESTING
+                // startAutoSave();
+                console.log('⚠️ Auto-save disabled for testing - use manual save button');
                 
                 // Restore any saved progress for this template
                 restoreTemplateProgress();
