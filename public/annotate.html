@@ -1211,7 +1211,7 @@
                 console.log('💾 Progress saved:', Object.keys(data.placeholders).length, 'placeholders');
             }
             
-            // Restore user progress - SIMPLIFIED VERSION
+            // Restore user progress - FIXED VERSION (cache bust: v2)
             function restoreTemplateProgress() {
                 if (!currentUserId || !currentTemplate) {
                     console.log('📂 Cannot restore: missing userId or template');
