@@ -861,6 +861,34 @@
             
             // Current template data
             let currentTemplate = null;
+            let autoSaveInterval = null; // For periodic auto-save
+            
+            // Start auto-save interval
+            function startAutoSave() {
+                // Clear any existing interval
+                if (autoSaveInterval) {
+                    clearInterval(autoSaveInterval);
+                }
+                
+                // Save progress every 3 seconds
+                autoSaveInterval = setInterval(() => {
+                    if (currentUserId && currentTemplate) {
+                        console.log('⏰ Auto-save triggered');
+                        saveTemplateProgress();
+                    }
+                }, 3000);
+                
+                console.log('⏰ Auto-save started (every 3 seconds)');
+            }
+            
+            // Stop auto-save interval
+            function stopAutoSave() {
+                if (autoSaveInterval) {
+                    clearInterval(autoSaveInterval);
+                    autoSaveInterval = null;
+                    console.log('⏰ Auto-save stopped');
+                }
+            }
             
             // Generate device fingerprint using FingerprintJS
             async function generateDeviceFingerprint() {
@@ -1042,6 +1070,7 @@
                     <button onclick="window.debugValidation()" style="margin-top: 5px; width: 100%;">🔍 Check Validation</button><br>
                     <button onclick="window.debugSaveProgress()" style="margin-top: 2px; width: 100%;">💾 Save Progress Now</button><br>
                     <button onclick="window.debugRestoreProgress()" style="margin-top: 2px; width: 100%;">📂 Restore Progress</button><br>
+                    <button onclick="window.debugLocalStorage()" style="margin-top: 2px; width: 100%;">🗂️ Check LocalStorage</button><br>
                     <button onclick="document.getElementById('debug-info').style.display='none'" style="margin-top: 5px;">Hide</button>
                 `;
                 
@@ -1066,6 +1095,42 @@
                     console.log('🚨 MANUAL RESTORE PROGRESS TRIGGERED');
                     restoreTemplateProgress();
                     alert('Progress restoration attempted! Check console for details.');
+                };
+                
+                // Add localStorage inspection function
+                window.debugLocalStorage = function() {
+                    console.log('🚨 LOCALSTORAGE DEBUG TRIGGERED');
+                    const progressKey = `template_progress_${currentUserId}`;
+                    const templateKey = `current_template_${currentUserId}`;
+                    
+                    console.log('🗂️ Checking localStorage keys:');
+                    console.log('📋 Progress key:', progressKey);
+                    console.log('📄 Template key:', templateKey);
+                    
+                    const progressData = localStorage.getItem(progressKey);
+                    const templateData = localStorage.getItem(templateKey);
+                    
+                    console.log('📋 Progress data:', progressData);
+                    console.log('📄 Template data:', templateData);
+                    
+                    if (progressData) {
+                        try {
+                            const parsed = JSON.parse(progressData);
+                            console.log('📋 Parsed progress:', parsed);
+                            console.log('📋 Placeholder values:', Object.keys(parsed.placeholderValues || {}));
+                            Object.keys(parsed.placeholderValues || {}).forEach(key => {
+                                console.log(`  📝 ${key}: "${parsed.placeholderValues[key]}"`);
+                            });
+                            console.log('📋 Translation values:');
+                            Object.keys(parsed.translations || {}).forEach(key => {
+                                console.log(`  📄 ${key}: "${parsed.translations[key]}"`);
+                            });
+                        } catch (e) {
+                            console.error('📋 Failed to parse progress data:', e);
+                        }
+                    }
+                    
+                    alert('LocalStorage data logged to console!');
                 };
             }
             
@@ -1236,16 +1301,22 @@
                 localStorage.removeItem(storedTemplateKey);
                 localStorage.removeItem(progressKey);
                 console.log('Cleared stored template and progress for user:', currentUserId);
+                
+                // Stop auto-save when template is cleared
+                stopAutoSave();
             }
             
-            // Save user progress on current template
+            // Save user progress on current template - SIMPLIFIED VERSION
             function saveTemplateProgress() {
-                if (!currentUserId || !currentTemplate) return;
+                if (!currentUserId || !currentTemplate) {
+                    console.log('💾 Cannot save: missing userId or template');
+                    return;
+                }
                 
                 const progressKey = `template_progress_${currentUserId}`;
                 const progress = {
                     templateId: currentTemplate.id,
-                    inputs: {},
+                    placeholderValues: {}, // Store actual values, not DOM state
                     translations: {
                         question: translationQuestion.value,
                         optionA: translationOptionA.value,
@@ -1256,150 +1327,148 @@
                     timestamp: Date.now()
                 };
                 
-                // Save filled placeholder values - check both inputs and any remaining placeholders
-                const inputs = document.querySelectorAll('input[data-placeholder-id]');
-                console.log('💾 Saving progress - Found inputs:', inputs.length);
+                // Collect ALL placeholder values by scanning both inputs AND data attributes
+                const allElements = document.querySelectorAll('[data-placeholder-id]');
+                console.log('💾 Found elements with placeholder IDs:', allElements.length);
                 
-                inputs.forEach((input, index) => {
-                    const id = input.getAttribute('data-placeholder-id');
-                    const value = input.value || '';
-                    progress.inputs[id] = value;
-                    console.log(`💾 Saving input ${index + 1}: ID="${id}", Value="${value}"`);
-                });
-                
-                // Also check for any placeholders that might have been missed
-                const allPlaceholderElements = document.querySelectorAll('[data-placeholder-id]');
-                console.log('💾 Total placeholder elements found:', allPlaceholderElements.length);
-                
-                allPlaceholderElements.forEach((element, index) => {
+                allElements.forEach((element, index) => {
                     const id = element.getAttribute('data-placeholder-id');
+                    let value = '';
+                    
                     if (element.tagName === 'INPUT') {
-                        // Already handled above, but double-check
-                        if (!progress.inputs.hasOwnProperty(id)) {
-                            progress.inputs[id] = element.value || '';
-                            console.log(`💾 Missed input found: ID="${id}", Value="${element.value || ''}"`);
-                        }
+                        value = element.value || '';
+                    } else if (element.tagName === 'SPAN' && element.hasAttribute('data-filled-value')) {
+                        // If it's a span but has a stored value
+                        value = element.getAttribute('data-filled-value') || '';
                     }
-                    console.log(`💾 Element ${index + 1}: ID="${id}", Tag="${element.tagName}", Value="${element.tagName === 'INPUT' ? element.value : 'N/A'}"`);
+                    
+                    if (value.trim()) {
+                        progress.placeholderValues[id] = value.trim();
+                        console.log(`💾 Saved: ${id} = "${value}"`);
+                    }
                 });
                 
-                console.log('💾 Final progress object being saved:', progress);
+                console.log('💾 Total saved values:', Object.keys(progress.placeholderValues).length);
                 localStorage.setItem(progressKey, JSON.stringify(progress));
-                console.log('💾 Progress saved to localStorage with key:', progressKey);
+                
+                return progress; // Return for debugging
             }
             
-            // Restore user progress on current template
+            // Restore user progress - SIMPLIFIED VERSION
             function restoreTemplateProgress() {
-                if (!currentUserId || !currentTemplate) return;
+                if (!currentUserId || !currentTemplate) {
+                    console.log('📂 Cannot restore: missing userId or template');
+                    return;
+                }
                 
                 const progressKey = `template_progress_${currentUserId}`;
                 const storedProgress = localStorage.getItem(progressKey);
                 
                 if (!storedProgress) {
-                    console.log('📂 No stored progress found for key:', progressKey);
+                    console.log('📂 No stored progress found');
                     return;
                 }
                 
                 try {
                     const progress = JSON.parse(storedProgress);
-                    console.log('📂 Loaded progress from localStorage:', progress);
                     
                     // Only restore if it's for the same template
                     if (progress.templateId !== currentTemplate.id) {
-                        console.log('📂 Template ID mismatch - stored:', progress.templateId, 'current:', currentTemplate.id);
+                        console.log('📂 Template mismatch, clearing old progress');
                         localStorage.removeItem(progressKey);
                         return;
                     }
                     
-                    console.log('🔄 Restoring template progress for user:', currentUserId);
-                    console.log('🔄 Progress inputs to restore:', Object.keys(progress.inputs || {}));
+                    console.log('� Restoring progress:', progress);
                     
-                    // Restore translation fields
+                    // Restore translation fields immediately
                     if (progress.translations) {
                         translationQuestion.value = progress.translations.question || '';
                         translationOptionA.value = progress.translations.optionA || '';
                         translationOptionB.value = progress.translations.optionB || '';
                         translationOptionC.value = progress.translations.optionC || '';
                         translationOptionD.value = progress.translations.optionD || '';
-                        console.log('🔄 Translation fields restored');
+                        console.log('� Translation fields restored');
                     }
                     
-                    // Restore placeholder inputs with improved logic
+                    // Restore placeholder values using a direct approach
+                    if (progress.placeholderValues) {
+                        console.log('� Restoring placeholder values:', Object.keys(progress.placeholderValues));
+                        
+                        Object.keys(progress.placeholderValues).forEach(placeholderId => {
+                            const value = progress.placeholderValues[placeholderId];
+                            restorePlaceholderValue(placeholderId, value);
+                        });
+                    }
+                    
+                    // Single validation after restoration
                     setTimeout(() => {
-                        console.log('🔄 Starting placeholder restoration...');
-                        let restoredCount = 0;
-                        let totalToRestore = Object.keys(progress.inputs || {}).length;
-                        
-                        Object.keys(progress.inputs || {}).forEach((placeholderId, index) => {
-                            const value = progress.inputs[placeholderId];
-                            if (!value) {
-                                console.log(`🔄 Skipping empty value for ${placeholderId}`);
-                                return;
-                            }
-                            
-                            console.log(`🔄 Attempting to restore ${index + 1}/${totalToRestore}: "${placeholderId}" = "${value}"`);
-                            
-                            // Try to find the element
-                            let element = document.querySelector(`[data-placeholder-id="${placeholderId}"]`);
-                            console.log(`🔄 Found element for ${placeholderId}:`, element?.tagName || 'NOT FOUND');
-                            
-                            if (!element) {
-                                console.warn(`🔄 ❌ No element found for placeholder: ${placeholderId}`);
-                                return;
-                            }
-                            
-                            if (element.tagName === 'SPAN') {
-                                console.log(`🔄 Converting SPAN to INPUT for ${placeholderId}`);
-                                // Convert placeholder to input and fill it
-                                element.click(); // This will convert it to input
-                                
-                                // Wait for conversion to complete
-                                setTimeout(() => {
-                                    const input = document.querySelector(`input[data-placeholder-id="${placeholderId}"]`);
-                                    if (input) {
-                                        input.value = value;
-                                        // Trigger events to ensure validation sees the change
-                                        input.dispatchEvent(new Event('input', { bubbles: true }));
-                                        input.dispatchEvent(new Event('change', { bubbles: true }));
-                                        restoredCount++;
-                                        console.log(`🔄 ✅ Restored ${placeholderId} = "${value}" (${restoredCount}/${totalToRestore})`);
-                                    } else {
-                                        console.error(`🔄 ❌ Failed to find input after conversion for ${placeholderId}`);
-                                    }
-                                }, 100);
-                                
-                            } else if (element.tagName === 'INPUT') {
-                                console.log(`🔄 Filling existing INPUT for ${placeholderId}`);
-                                // Already an input, just fill it
-                                element.value = value;
-                                // Trigger events to ensure validation sees the change
-                                element.dispatchEvent(new Event('input', { bubbles: true }));
-                                element.dispatchEvent(new Event('change', { bubbles: true }));
-                                restoredCount++;
-                                console.log(`🔄 ✅ Restored ${placeholderId} = "${value}" (${restoredCount}/${totalToRestore})`);
-                            }
-                        });
-                        
-                        // Multiple validation attempts with increasing delays
-                        const validationDelays = [300, 600, 1000, 1500];
-                        validationDelays.forEach((delay, index) => {
-                            setTimeout(() => {
-                                console.log(`🔄 Validation attempt ${index + 1}/${validationDelays.length} (delay: ${delay}ms)`);
-                                validateAnnotation();
-                                updateProgressBasedOnCompleteness();
-                                
-                                if (index === validationDelays.length - 1) {
-                                    console.log('🔄 ✅ Template progress restoration completed');
-                                }
-                            }, delay);
-                        });
-                        
-                    }, 150); // Initial delay to ensure placeholders are initialized
+                        console.log('📂 Running post-restoration validation');
+                        validateAnnotation();
+                        updateProgressBasedOnCompleteness();
+                    }, 500);
                     
                 } catch (error) {
-                    console.warn('🔄 ❌ Failed to restore template progress:', error);
+                    console.error('� Failed to restore progress:', error);
                     localStorage.removeItem(progressKey);
                 }
+            }
+            
+            // Helper function to restore a single placeholder value
+            function restorePlaceholderValue(placeholderId, value) {
+                console.log(`� Restoring "${placeholderId}" = "${value}"`);
+                
+                // Find the element
+                let element = document.querySelector(`[data-placeholder-id="${placeholderId}"]`);
+                if (!element) {
+                    console.warn(`📂 ❌ Element not found: ${placeholderId}`);
+                    return false;
+                }
+                
+                if (element.tagName === 'SPAN') {
+                    // Convert span to input
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.value = value;
+                    input.setAttribute('data-placeholder-id', placeholderId);
+                    input.placeholder = element.textContent;
+                    
+                    // Add the same event listeners as in initPlaceholders
+                    addPlaceholderEventListeners(input, placeholderId, element.textContent);
+                    
+                    // Replace the span with the input
+                    element.parentNode.replaceChild(input, element);
+                    console.log(`� ✅ Converted span to input: ${placeholderId}`);
+                    return true;
+                    
+                } else if (element.tagName === 'INPUT') {
+                    // Just set the value
+                    element.value = value;
+                    console.log(`� ✅ Set input value: ${placeholderId}`);
+                    return true;
+                }
+                
+                return false;
+            }
+            
+            // Helper function to add consistent event listeners to placeholder inputs
+            function addPlaceholderEventListeners(input, placeholderId, placeholderText) {
+                input.addEventListener('input', function() {
+                    validateAnnotation();
+                    saveTemplateProgress();
+                });
+                
+                input.addEventListener('blur', function() {
+                    saveTemplateProgress(); // Always save on blur
+                    
+                    if (this.value.trim() === '') {
+                        // Convert back to placeholder if empty
+                        const newPlaceholder = createPlaceholder(placeholderId, placeholderText);
+                        this.parentNode.replaceChild(newPlaceholder, this);
+                        validateAnnotation();
+                        saveTemplateProgress();
+                    }
+                });
             }
             
             // Function to get template examples based on template ID or type
@@ -1543,6 +1612,9 @@
                 // Setup placeholder functionality for question and options
                 initPlaceholders();
                 
+                // Start auto-save for this template
+                startAutoSave();
+                
                 // Restore any saved progress for this template
                 restoreTemplateProgress();
                 
@@ -1560,11 +1632,15 @@
             // Initialize placeholder functionality
             function initPlaceholders() {
                 const placeholders = document.querySelectorAll('.placeholder');
+                console.log('🎯 Initializing placeholders:', placeholders.length);
                 
-                placeholders.forEach(placeholder => {
+                placeholders.forEach((placeholder, index) => {
+                    const placeholderId = placeholder.getAttribute('data-placeholder-id');
+                    const placeholderText = placeholder.textContent;
+                    console.log(`🎯 Setting up placeholder ${index + 1}: ${placeholderId}`);
+                    
                     placeholder.addEventListener('click', function() {
-                        const placeholderId = this.getAttribute('data-placeholder-id');
-                        const placeholderText = this.textContent;
+                        console.log(`🎯 Placeholder clicked: ${placeholderId}`);
                         
                         // Create input field
                         const input = document.createElement('input');
@@ -1573,30 +1649,18 @@
                         input.setAttribute('data-placeholder-id', placeholderId);
                         input.placeholder = placeholderText;
                         
+                        // Add consistent event listeners
+                        addPlaceholderEventListeners(input, placeholderId, placeholderText);
+                        
                         // Replace placeholder with input
                         this.parentNode.replaceChild(input, this);
                         
                         // Focus on the new input
                         input.focus();
                         
-                        // Handle input changes
-                        input.addEventListener('input', function() {
-                            validateAnnotation();
-                            saveTemplateProgress(); // Save progress when user fills placeholders
-                        });
-                        
-                        // Handle input blur
-                        input.addEventListener('blur', function() {
-                            if (this.value.trim() === '') {
-                                // Convert back to placeholder if empty
-                                const newPlaceholder = createPlaceholder(placeholderId, placeholderText);
-                                this.parentNode.replaceChild(newPlaceholder, this);
-                                validateAnnotation();
-                            }
-                        });
-                        
-                        // Initial validation after creating input
+                        // Initial validation and save
                         validateAnnotation();
+                        saveTemplateProgress();
                     });
                 });
             }
@@ -1618,23 +1682,14 @@
                     input.setAttribute('data-placeholder-id', placeholderId);
                     input.placeholder = placeholderText;
                     
+                    // Add consistent event listeners
+                    addPlaceholderEventListeners(input, placeholderId, placeholderText);
+                    
                     this.parentNode.replaceChild(input, this);
                     input.focus();
                     
-                    input.addEventListener('input', function() {
-                        validateAnnotation();
-                        saveTemplateProgress(); // Save progress when user fills placeholders
-                    });
-                    
-                    input.addEventListener('blur', function() {
-                        if (this.value.trim() === '') {
-                            const newPlaceholder = createPlaceholder(placeholderId, placeholderText);
-                            this.parentNode.replaceChild(newPlaceholder, this);
-                            validateAnnotation();
-                        }
-                    });
-                    
                     validateAnnotation();
+                    saveTemplateProgress();
                 });
                 
                 return placeholder;
