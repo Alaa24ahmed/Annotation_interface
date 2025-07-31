@@ -1910,6 +1910,12 @@
             // Reset the current template
             function resetTemplate() {
                 if (currentTemplate) {
+                    // Clear any saved progress for this template before reloading
+                    const progressKey = `template_progress_${currentUserId}`;
+                    localStorage.removeItem(progressKey);
+                    console.log('🗑️ Cleared saved progress for reset');
+                    
+                    // Now reload the template (which will be clean)
                     loadTemplate(currentTemplate);
                 } else {
                     fetchRandomTemplate();
