@@ -1307,8 +1307,9 @@
                     return true;
                     
                 } else if (element.tagName === 'INPUT') {
-                    // Just set the value
+                    // Just set the value and auto-resize
                     element.value = value;
+                    autoResizeInput(element); // Auto-resize based on restored value
                     console.log(`� ✅ Set input value: ${placeholderId}`);
                     return true;
                 }
@@ -1316,9 +1317,42 @@
                 return false;
             }
             
+            // Helper function to auto-resize input based on content
+            function autoResizeInput(input) {
+                // Create a temporary span to measure text width
+                const temp = document.createElement('span');
+                temp.style.visibility = 'hidden';
+                temp.style.position = 'absolute';
+                temp.style.fontSize = window.getComputedStyle(input).fontSize;
+                temp.style.fontFamily = window.getComputedStyle(input).fontFamily;
+                temp.style.fontWeight = window.getComputedStyle(input).fontWeight;
+                temp.style.padding = '0';
+                temp.style.margin = '0';
+                temp.style.border = 'none';
+                temp.style.whiteSpace = 'nowrap';
+                
+                // Use input value or placeholder for measurement
+                temp.textContent = input.value || input.placeholder;
+                
+                document.body.appendChild(temp);
+                
+                // Set minimum width (based on placeholder) and add some padding
+                const minWidth = 120; // minimum width in pixels
+                const measuredWidth = temp.offsetWidth + 20; // add 20px padding
+                const newWidth = Math.max(minWidth, measuredWidth);
+                
+                input.style.width = newWidth + 'px';
+                
+                document.body.removeChild(temp);
+            }
+
             // Helper function to add consistent event listeners to placeholder inputs
             function addPlaceholderEventListeners(input, placeholderId, placeholderText) {
+                // Auto-resize on initial creation
+                autoResizeInput(input);
+                
                 input.addEventListener('input', function() {
+                    autoResizeInput(this); // Resize as user types
                     validateAnnotation();
                     saveTemplateProgress();
                 });
