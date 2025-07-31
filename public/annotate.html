@@ -1915,8 +1915,9 @@
                     localStorage.removeItem(progressKey);
                     console.log('🗑️ Cleared saved progress for reset');
                     
-                    // Hide preview panel if visible
+                    // Hide and clear preview panel
                     previewDiv.style.display = 'none';
+                    previewDiv.innerHTML = ''; // Clear the preview content
                     
                     // Now reload the template (which will be clean)
                     loadTemplate(currentTemplate);
