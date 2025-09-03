@@ -879,6 +879,36 @@
         
         <h2>Question Template</h2>
         
+        <!-- Question Template -->
+        <fieldset>
+            <legend>Question</legend>
+            <p id="template-text"></p>
+        </fieldset>
+        
+        <!-- Options Template -->
+        <fieldset>
+            <legend>Options</legend>
+            <div class="options-container">
+                <div class="option-item correct-option">
+                    <div class="option-label">A.</div>
+                    <div class="option-content" id="option-a-template"></div>
+                    <div class="correct-marker">Correct Answer</div>
+                </div>
+                <div class="option-item">
+                    <div class="option-label">B.</div>
+                    <div class="option-content" id="option-b-template"></div>
+                </div>
+                <div class="option-item">
+                    <div class="option-label">C.</div>
+                    <div class="option-content" id="option-c-template"></div>
+                </div>
+                <div class="option-item">
+                    <div class="option-label">D.</div>
+                    <div class="option-content" id="option-d-template"></div>
+                </div>
+            </div>
+        </fieldset>
+
         <!-- Example Question (MOVED UP) -->
         <fieldset class="example-fieldset">
             <legend>Example</legend>
@@ -914,42 +944,42 @@
             </div>
         </fieldset>
 
-        <!-- Side-by-Side Template Filling & Translation -->
+        <!-- Side-by-Side English & Translation -->
         <fieldset>
-            <legend>Fill Template & Translate</legend>
+            <legend>Question & Translation</legend>
             <div class="side-by-side-container">
-                <!-- Template Column (Left) -->
+                <!-- English Column (Auto-updated) -->
                 <div class="english-column">
-                    <h3>Fill the Template (English)</h3>
+                    <h3>English Version</h3>
                     <div class="english-content">
                         <div class="question-section">
-                            <h4>Question Template:</h4>
-                            <div class="template-content" id="template-text-interactive"></div>
+                            <h4>Question:</h4>
+                            <div class="question-display" id="english-question-display">Complete the template above to see your question here</div>
                         </div>
                         <div class="options-section">
-                            <h4>Options Templates:</h4>
+                            <h4>Options:</h4>
                             <div class="option-display correct-option">
                                 <span class="option-label">A.</span>
-                                <div class="option-content-interactive" id="option-a-interactive"></div>
+                                <span class="option-text" id="english-option-a">Fill template to see option A</span>
                                 <span class="correct-badge">Correct</span>
                             </div>
                             <div class="option-display">
                                 <span class="option-label">B.</span>
-                                <div class="option-content-interactive" id="option-b-interactive"></div>
+                                <span class="option-text" id="english-option-b">Fill template to see option B</span>
                             </div>
                             <div class="option-display">
                                 <span class="option-label">C.</span>
-                                <div class="option-content-interactive" id="option-c-interactive"></div>
+                                <span class="option-text" id="english-option-c">Fill template to see option C</span>
                             </div>
                             <div class="option-display">
                                 <span class="option-label">D.</span>
-                                <div class="option-content-interactive" id="option-d-interactive"></div>
+                                <span class="option-text" id="english-option-d">Fill template to see option D</span>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Translation Column (Right) -->
+                <!-- Translation Column -->
                 <div class="translation-column">
                     <h3>Your Language Translation</h3>
                     <div class="translation-content">
@@ -1003,11 +1033,11 @@
             // Existing global variables
             const loadingDiv = document.getElementById('loading');
             const templateContainer = document.getElementById('template-container');
-            const templateText = document.getElementById('template-text-interactive');
-            const optionATemplate = document.getElementById('option-a-interactive');
-            const optionBTemplate = document.getElementById('option-b-interactive');
-            const optionCTemplate = document.getElementById('option-c-interactive');
-            const optionDTemplate = document.getElementById('option-d-interactive');
+            const templateText = document.getElementById('template-text');
+            const optionATemplate = document.getElementById('option-a-template');
+            const optionBTemplate = document.getElementById('option-b-template');
+            const optionCTemplate = document.getElementById('option-c-template');
+            const optionDTemplate = document.getElementById('option-d-template');
             
             const translationQuestion = document.getElementById('translation-question');
             const translationOptionA = document.getElementById('translation-option-a');
@@ -1756,6 +1786,49 @@
                 return placeholder;
             }
             
+            // Function to update the English column with real-time content
+            function updateEnglishColumn() {
+                try {
+                    const completed = getCompletedQuestion();
+                    
+                    // Update question display
+                    const questionDisplay = document.getElementById('english-question-display');
+                    const englishOptionA = document.getElementById('english-option-a');
+                    const englishOptionB = document.getElementById('english-option-b');
+                    const englishOptionC = document.getElementById('english-option-c');
+                    const englishOptionD = document.getElementById('english-option-d');
+                    
+                    if (completed.question && completed.question !== currentTemplate.template) {
+                        questionDisplay.textContent = completed.question;
+                        questionDisplay.classList.add('filled');
+                    } else {
+                        questionDisplay.textContent = 'Complete the template above to see your question here';
+                        questionDisplay.classList.remove('filled');
+                    }
+                    
+                    // Update options
+                    const options = [
+                        { elem: englishOptionA, value: completed.optionA, placeholder: 'Fill template to see option A' },
+                        { elem: englishOptionB, value: completed.optionB, placeholder: 'Fill template to see option B' },
+                        { elem: englishOptionC, value: completed.optionC, placeholder: 'Fill template to see option C' },
+                        { elem: englishOptionD, value: completed.optionD, placeholder: 'Fill template to see option D' }
+                    ];
+                    
+                    options.forEach(option => {
+                        if (option.value && option.value.trim() && !option.value.includes('not provided')) {
+                            option.elem.textContent = option.value;
+                            option.elem.classList.add('filled');
+                        } else {
+                            option.elem.textContent = option.placeholder;
+                            option.elem.classList.remove('filled');
+                        }
+                    });
+                    
+                } catch (error) {
+                    console.log('Error updating English column:', error);
+                }
+            }
+            
             // Validation function to check if all fields are filled
             function validateAnnotation() {
                 console.log('🔍 VALIDATION START - Current time:', new Date().toISOString());
@@ -1764,6 +1837,9 @@
                 const inputs = document.querySelectorAll('input[data-placeholder-id]');
                 let isValid = true;
                 let missingFields = [];
+                
+                // Update the English column with real-time content
+                updateEnglishColumn();
                 
                 console.log('📊 DOM State - Placeholders:', placeholders.length, 'Inputs:', inputs.length);
                 console.log('🎯 Submit button current state - Disabled:', submitBtn.disabled);
