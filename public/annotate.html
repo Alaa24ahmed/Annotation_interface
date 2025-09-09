@@ -1145,6 +1145,11 @@
             // Current template data
             let currentTemplate = null;
             
+            // NEW: Timing and subset tracking
+            let templateStartTime = null;
+            let currentSubsetId = null;
+            let currentTemplatePosition = null;
+            
             // Generate device fingerprint using FingerprintJS
             async function generateDeviceFingerprint() {
                 try {
@@ -1898,6 +1903,51 @@
                 // Return default if no matches found
                 return examples.default;
             }
+            
+            // NEW: Detect subset and position from localStorage (fast)
+            function detectSubsetAndPosition() {
+                // Check URL for subset parameter (?subset=A)
+                const urlParams = new URLSearchParams(window.location.search);
+                const subsetFromUrl = urlParams.get('subset');
+                
+                if (subsetFromUrl) {
+                    currentSubsetId = subsetFromUrl;
+                    
+                    // Use localStorage to track completed templates for this user + subset
+                    const completedKey = `subset_${currentSubsetId}_user_${currentUserId}_completed`;
+                    const completedTemplates = JSON.parse(localStorage.getItem(completedKey) || '[]');
+                    
+                    // Current position = number of completed templates + 1
+                    currentTemplatePosition = completedTemplates.length + 1;
+                    
+                    console.log(`📊 Subset mode: ${currentSubsetId}`);
+                    console.log(`📊 Completed templates:`, completedTemplates);
+                    console.log(`📊 Starting from position: ${currentTemplatePosition}`);
+                } else {
+                    // Random mode - no subset
+                    currentSubsetId = null;
+                    currentTemplatePosition = null;
+                    console.log('📊 Random mode: no subset tracking');
+                }
+            }
+            
+            // NEW: Mark template as completed in localStorage
+            function markTemplateCompleted(templateId) {
+                if (!currentSubsetId || !currentUserId || !templateId) {
+                    console.log('📊 Not in subset mode, skipping localStorage update');
+                    return;
+                }
+                
+                const completedKey = `subset_${currentSubsetId}_user_${currentUserId}_completed`;
+                const completedTemplates = JSON.parse(localStorage.getItem(completedKey) || '[]');
+                
+                // Add template ID if not already completed
+                if (!completedTemplates.includes(templateId)) {
+                    completedTemplates.push(templateId);
+                    localStorage.setItem(completedKey, JSON.stringify(completedTemplates));
+                    console.log(`📊 Marked template ${templateId} as completed. Total completed: ${completedTemplates.length}`);
+                }
+            }
                     
             // Create a sample template for development/testing
             function createExampleTemplate() {
@@ -1971,6 +2021,13 @@
                 
                 // Setup placeholder functionality for question and options
                 initPlaceholders();
+                
+                // NEW: Start timing the template interaction
+                templateStartTime = Date.now();
+                console.log('⏱️ Template timing started:', new Date(templateStartTime).toISOString());
+                
+                // NEW: Detect subset and position from URL or template
+                detectSubsetAndPosition();
                 
                 // Start auto-save for this template - DISABLED FOR TESTING
                 // startAutoSave();
@@ -2070,13 +2127,8 @@
                     const englishOptionC = document.getElementById('english-option-c');
                     const englishOptionD = document.getElementById('english-option-d');
                     
-                    // Check if we have any filled placeholders (better check than comparing to template)
-                    const hasFilledPlaceholders = completed.placeholderValues && Object.keys(completed.placeholderValues).length > 0;
-                    
-                    if (hasFilledPlaceholders && completed.question) {
-                        // Convert \n to <br> for proper line breaks in HTML
-                        const formattedQuestion = completed.question.replace(/\n/g, '<br>');
-                        questionDisplay.innerHTML = formattedQuestion;
+                    if (completed.question && completed.question !== currentTemplate.template) {
+                        questionDisplay.innerHTML = formatLineBreaks(completed.question);
                         questionDisplay.classList.add('filled');
                     } else {
                         questionDisplay.textContent = 'Complete the template above to see your question here';
@@ -2093,7 +2145,7 @@
                     
                     options.forEach(option => {
                         if (option.value && option.value.trim() && !option.value.includes('not provided')) {
-                            option.elem.textContent = option.value;
+                            option.elem.innerHTML = formatLineBreaks(option.value);
                             option.elem.classList.add('filled');
                         } else {
                             option.elem.textContent = option.placeholder;
@@ -2220,50 +2272,33 @@
                     }
                 });
                 
-                console.log("🔍 Placeholder values found:", placeholderValues);
-                console.log("🔍 Number of filled placeholders:", Object.keys(placeholderValues).length);
+                console.log("Placeholder values for options:", placeholderValues);
                 
-                // Check if we have any values at all
-                const hasValues = Object.keys(placeholderValues).length > 0;
+                // Create a simplified version of the completed question
+                let question = currentTemplate.template; // Use the original template text
                 
-                // Create a completed version of the question
-                let question = currentTemplate ? currentTemplate.template : '';
-                let questionHasPlaceholders = false;
+                // Replace placeholders in the question with actual values
+                Object.keys(placeholderValues).forEach(key => {
+                    question = question.replace(`[${key}]`, placeholderValues[key]);
+                });
                 
-                if (question) {
-                    // Check if question has placeholders and replace them
-                    const questionPlaceholders = question.match(/\[[^\]]+\]/g) || [];
-                    questionHasPlaceholders = questionPlaceholders.length > 0;
-                    
-                    // Replace placeholders in the question with actual values
-                    Object.keys(placeholderValues).forEach(key => {
-                        const regex = new RegExp(`\\[${key}\\]`, 'g');
-                        question = question.replace(regex, placeholderValues[key]);
-                    });
-                    
-                    // Convert \n to actual line breaks for display
-                    question = question.replace(/\\n/g, '\n');
-                }
+                // Convert \n to actual line breaks for display
+                question = question.replace(/\\n/g, '\n');
                 
-                // Get options by specific placeholder IDs
-                const optionA = placeholderValues['CORRECT_OPTION'] || "";
-                const optionB = placeholderValues['WRONG_OPTION_1'] || "";
-                const optionC = placeholderValues['WRONG_OPTION_2'] || "";
-                const optionD = placeholderValues['WRONG_OPTION_3'] || "";
+                // DIRECT APPROACH: Get options by specific placeholder IDs
+                const optionA = placeholderValues['CORRECT_OPTION'] || "Correct option not provided";
+                const optionB = placeholderValues['WRONG_OPTION_1'] || "Wrong option 1 not provided";
+                const optionC = placeholderValues['WRONG_OPTION_2'] || "Wrong option 2 not provided";
+                const optionD = placeholderValues['WRONG_OPTION_3'] || "Wrong option 3 not provided";
                 
-                console.log("🔍 Generated question:", question);
-                console.log("🔍 Options:", {optionA, optionB, optionC, optionD});
-                console.log("🔍 Has values:", hasValues, "Question has placeholders:", questionHasPlaceholders);
+                console.log("Direct option extraction:", {optionA, optionB, optionC, optionD});
                 
                 return {
                     question,
                     optionA, 
                     optionB,
                     optionC,
-                    optionD,
-                    hasValues,
-                    questionHasPlaceholders,
-                    placeholderValues
+                    optionD
                 };
             }
             
@@ -2420,7 +2455,13 @@
                     
                     // Add demographics data
                     language: demographics.language,
-                    country: demographics.country
+                    country: demographics.country,
+                    
+                    // NEW: Add subset tracking and timing data
+                    subset_id: currentSubsetId,
+                    template_position: currentTemplatePosition,
+                    completion_status: 'completed',
+                    time_spent_seconds: templateStartTime ? Math.round((Date.now() - templateStartTime) / 1000) : null
                 };
                 
                 // Collect placeholder values
@@ -2545,7 +2586,13 @@
                             
                             // Add demographics data
                             language: demographics.language,
-                            country: demographics.country
+                            country: demographics.country,
+                            
+                            // NEW: Add subset tracking and timing data
+                            subset_id: currentSubsetId,
+                            template_position: currentTemplatePosition,
+                            completion_status: 'skipped',
+                            time_spent_seconds: templateStartTime ? Math.round((Date.now() - templateStartTime) / 1000) : null
                         };
                         
                         try {
@@ -2559,6 +2606,7 @@
                             
                             if (response.ok) {
                                 console.log('Template skip logged successfully');
+                                markTemplateCompleted(); // Mark template as completed in localStorage
                             } else {
                                 console.warn('Failed to log template skip');
                             }
@@ -2654,6 +2702,9 @@
                     
                     // Clear stored template since submission was successful
                     clearStoredTemplate();
+                    
+                    // NEW: Mark template as completed in localStorage
+                    markTemplateCompleted(currentTemplate.id);
                     
                     // Show success message
                     statusDiv.className = 'status success';

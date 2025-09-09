@@ -30,7 +30,12 @@ exports.saveAnnotation = async (req, res) => {
         is_prolific_user,
         // Add demographics data
         language,
-        country
+        country,
+        // NEW: Add subset tracking and timing fields
+        subset_id,
+        template_position,
+        completion_status,
+        time_spent_seconds
       } = req.body;
       
       // Determine user type for logging
@@ -108,7 +113,12 @@ exports.saveAnnotation = async (req, res) => {
         is_prolific_user: isProlificUser,
         // Add demographics data
         language: language || null,
-        country: country || null
+        country: country || null,
+        // NEW: Add subset tracking and timing data
+        subset_id: subset_id || null,
+        template_position: template_position || null,
+        completion_status: completion_status || 'completed',
+        time_spent_seconds: time_spent_seconds || null
       };
       
       console.log("Inserting into Supabase:", payload);
@@ -174,7 +184,12 @@ exports.logTemplateSkip = async (req, res) => {
       skip_reason,
       // Add demographics fields
       language,
-      country
+      country,
+      // NEW: Add subset tracking and timing fields
+      subset_id,
+      template_position,
+      completion_status,
+      time_spent_seconds
     } = req.body;
     
     // Determine user type for logging
@@ -210,7 +225,12 @@ exports.logTemplateSkip = async (req, res) => {
       is_prolific_user: isProlificUser,
       skip_reason: skip_reason.trim(),
       language: language || null,
-      country: country || null
+      country: country || null,
+      // NEW: Add subset tracking and timing data
+      subset_id: subset_id || null,
+      template_position: template_position || null,
+      completion_status: completion_status || 'skipped',
+      time_spent_seconds: time_spent_seconds || null
     };
     
     console.log("Saving template skip to database:", skipPayload);
