@@ -1812,17 +1812,20 @@
                 input.addEventListener('input', function() {
                     autoResizeInput(this); // Resize as user types
                     validateAnnotation();
+                    updateEnglishColumn(); // Update the English column in real-time
                     saveTemplateProgress();
                 });
                 
                 input.addEventListener('blur', function() {
                     saveTemplateProgress(); // Always save on blur
+                    updateEnglishColumn(); // Update the English column when done editing
                     
                     if (this.value.trim() === '') {
                         // Convert back to placeholder if empty
                         const newPlaceholder = createPlaceholder(placeholderId, placeholderText);
                         this.parentNode.replaceChild(newPlaceholder, this);
                         validateAnnotation();
+                        updateEnglishColumn(); // Update again after converting back to placeholder
                         saveTemplateProgress();
                     }
                 });
@@ -2018,6 +2021,7 @@
                         
                         // Initial validation and save
                         validateAnnotation();
+                        updateEnglishColumn(); // Update English column when placeholder becomes input
                         saveTemplateProgress();
                     });
                 });
@@ -2047,6 +2051,7 @@
                     input.focus();
                     
                     validateAnnotation();
+                    updateEnglishColumn(); // Update English column when placeholder becomes input
                     saveTemplateProgress();
                 });
                 

@@ -98,32 +98,110 @@ async function loadTemplatesFromSupabase() {
     }
 }
 
-// Get a random template
+// Get a random template (optimized)
 const getRandomTemplate = async (req, res) => {
     try {
         console.log("Getting random template from Supabase...");
-        const templates = await loadTemplatesFromSupabase();
         
-        if (templates.length === 0) {
-            console.log("No templates found");
-            return res.status(404).json({ error: 'No templates found' });
+        // First, get the count of templates to determine random range
+        const { count, error: countError } = await supabase
+            .from('templates')
+            .select('*', { count: 'exact', head: true });
+
+        if (countError) {
+            console.error('Error getting template count:', countError);
+            // Fallback to sample templates
+            const sampleTemplates = getSampleTemplates();
+            const randomTemplate = sampleTemplates[Math.floor(Math.random() * sampleTemplates.length)];
+            return res.json(randomTemplate);
         }
-        
-        // Select a random template
-        const randomIndex = Math.floor(Math.random() * templates.length);
-        const template = templates[randomIndex];
-        
-        console.log(`Selected random template #${template.id} (index ${randomIndex} of ${templates.length})`);
-        
-        // Log example data to verify it's being sent
-        console.log("Example data for template:", template.example);
+
+        if (!count || count === 0) {
+            console.log("No templates found in database - using sample templates");
+            const sampleTemplates = getSampleTemplates();
+            const randomTemplate = sampleTemplates[Math.floor(Math.random() * sampleTemplates.length)];
+            return res.json(randomTemplate);
+        }
+
+        // Generate random template number (1 to count)
+        const randomTemplateNumber = Math.floor(Math.random() * count) + 1;
+        console.log(`Fetching random template #${randomTemplateNumber} out of ${count} templates`);
+
+        // Fetch only the specific random template
+        const { data: templates, error } = await supabase
+            .from('templates')
+            .select('*')
+            .eq('"No"', randomTemplateNumber);
+
+        if (error) {
+            console.error('Error loading random template from Supabase:', error);
+            // Fallback to sample templates
+            const sampleTemplates = getSampleTemplates();
+            const randomTemplate = sampleTemplates[Math.floor(Math.random() * sampleTemplates.length)];
+            return res.json(randomTemplate);
+        }
+
+        if (!templates || templates.length === 0) {
+            console.log(`Template #${randomTemplateNumber} not found - trying different approach`);
+            // Fallback: get any random template using LIMIT 1
+            const { data: fallbackTemplates, error: fallbackError } = await supabase
+                .from('templates')
+                .select('*')
+                .order('"No"')
+                .limit(1)
+                .range(Math.floor(Math.random() * count), Math.floor(Math.random() * count));
+
+            if (fallbackError || !fallbackTemplates || fallbackTemplates.length === 0) {
+                const sampleTemplates = getSampleTemplates();
+                const randomTemplate = sampleTemplates[Math.floor(Math.random() * sampleTemplates.length)];
+                return res.json(randomTemplate);
+            }
+            
+            const template = formatSingleTemplate(fallbackTemplates[0]);
+            console.log(`Selected fallback random template #${template.id}`);
+            return res.json(template);
+        }
+
+        // Format the single template
+        const template = formatSingleTemplate(templates[0]);
+        console.log(`Selected random template #${template.id}`);
         
         res.json(template);
     } catch (error) {
         console.error('Error getting random template:', error);
-        res.status(500).json({ error: 'Failed to get template' });
+        // Ultimate fallback to sample templates
+        const sampleTemplates = getSampleTemplates();
+        const randomTemplate = sampleTemplates[Math.floor(Math.random() * sampleTemplates.length)];
+        res.json(randomTemplate);
     }
 };
+
+// Helper function to format a single template row
+function formatSingleTemplate(row) {
+    return {
+        id: row.No, // Using "No" column from CSV
+        template: row.Template.trim(),
+        category: (row["Reasoning Category"] || '') + 
+                 (row["Cultural Aspect"] ? ' - ' + row["Cultural Aspect"] : ''),
+        reasoning_category: row["Reasoning Category"] || '',
+        cultural_aspect: row["Cultural Aspect"] || '',
+        template_text: generateTemplateHTML(row.Template),
+        // Wrap option templates in placeholder spans
+        option_a: generateOptionPlaceholder(row["Correct Option Template"] || 'The correct answer', 'CORRECT_OPTION'),
+        option_b: generateOptionPlaceholder(row["Wrong Options Template"] || 'An incorrect answer', 'WRONG_OPTION_1'),
+        option_c: generateOptionPlaceholder(row["Wrong Options Template"] || 'An incorrect answer', 'WRONG_OPTION_2'),
+        option_d: generateOptionPlaceholder(row["Wrong Options Template"] || 'An incorrect answer', 'WRONG_OPTION_3'),
+        
+        // Add example question and options
+        example: {
+            question: row["Example Question"] || '',
+            optionA: row["Option 1"] || '',
+            optionB: row["Option 2"] || '',
+            optionC: row["Option 3"] || '',
+            optionD: row["Option 4"] || ''
+        }
+    };
+}
 
 // Function to provide sample templates if Supabase fails
 function getSampleTemplates() {
@@ -212,34 +290,8 @@ const getTemplatesBySubset = async (req, res) => {
 
         console.log(`Successfully loaded ${templates.length} templates for subset ${subsetNum}`);
 
-        // Convert Supabase data to the expected format (same as loadTemplatesFromSupabase)
-        const formattedTemplates = templates.map(row => {
-            const template = {
-                id: row.No, // Using "No" column from CSV
-                template: row.Template.trim(),
-                category: (row["Reasoning Category"] || '') + 
-                         (row["Cultural Aspect"] ? ' - ' + row["Cultural Aspect"] : ''),
-                reasoning_category: row["Reasoning Category"] || '',
-                cultural_aspect: row["Cultural Aspect"] || '',
-                template_text: generateTemplateHTML(row.Template),
-                // Wrap option templates in placeholder spans
-                option_a: generateOptionPlaceholder(row["Correct Option Template"] || 'The correct answer', 'CORRECT_OPTION'),
-                option_b: generateOptionPlaceholder(row["Wrong Options Template"] || 'An incorrect answer', 'WRONG_OPTION_1'),
-                option_c: generateOptionPlaceholder(row["Wrong Options Template"] || 'An incorrect answer', 'WRONG_OPTION_2'),
-                option_d: generateOptionPlaceholder(row["Wrong Options Template"] || 'An incorrect answer', 'WRONG_OPTION_3'),
-                
-                // Add example question and options
-                example: {
-                    question: row["Example Question"] || '',
-                    optionA: row["Option 1"] || '',
-                    optionB: row["Option 2"] || '',
-                    optionC: row["Option 3"] || '',
-                    optionD: row["Option 4"] || ''
-                }
-            };
-            
-            return template;
-        });
+        // Convert Supabase data to the expected format using the helper function
+        const formattedTemplates = templates.map(row => formatSingleTemplate(row));
 
         console.log(`Returning ${formattedTemplates.length} formatted templates for subset ${subsetNum}`);
         formattedTemplates.forEach((t, i) => {
