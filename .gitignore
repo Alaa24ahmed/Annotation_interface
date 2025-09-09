@@ -1,7 +1,12 @@
+# Dependencies
+node_modules/
+
+# Environment variables (contains secrets)
 .env
 .env.local
 .env.production
 
+# Data files (prevent data leakage)
 data/
 *.csv
 
@@ -10,6 +15,11 @@ data/
 .vscode/
 npm-debug.log
 *.log
+
+
+# Build artifacts
+dist/
+build/
 
 # Temporary files
 *.tmp
