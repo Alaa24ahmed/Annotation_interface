@@ -2070,8 +2070,13 @@
                     const englishOptionC = document.getElementById('english-option-c');
                     const englishOptionD = document.getElementById('english-option-d');
                     
-                    if (completed.question && completed.question !== currentTemplate.template) {
-                        questionDisplay.innerHTML = formatLineBreaks(completed.question);
+                    // Check if we have any filled placeholders (better check than comparing to template)
+                    const hasFilledPlaceholders = completed.placeholderValues && Object.keys(completed.placeholderValues).length > 0;
+                    
+                    if (hasFilledPlaceholders && completed.question) {
+                        // Convert \n to <br> for proper line breaks in HTML
+                        const formattedQuestion = completed.question.replace(/\n/g, '<br>');
+                        questionDisplay.innerHTML = formattedQuestion;
                         questionDisplay.classList.add('filled');
                     } else {
                         questionDisplay.textContent = 'Complete the template above to see your question here';
@@ -2088,7 +2093,7 @@
                     
                     options.forEach(option => {
                         if (option.value && option.value.trim() && !option.value.includes('not provided')) {
-                            option.elem.innerHTML = formatLineBreaks(option.value);
+                            option.elem.textContent = option.value;
                             option.elem.classList.add('filled');
                         } else {
                             option.elem.textContent = option.placeholder;
@@ -2215,33 +2220,50 @@
                     }
                 });
                 
-                console.log("Placeholder values for options:", placeholderValues);
+                console.log("🔍 Placeholder values found:", placeholderValues);
+                console.log("🔍 Number of filled placeholders:", Object.keys(placeholderValues).length);
                 
-                // Create a simplified version of the completed question
-                let question = currentTemplate.template; // Use the original template text
+                // Check if we have any values at all
+                const hasValues = Object.keys(placeholderValues).length > 0;
                 
-                // Replace placeholders in the question with actual values
-                Object.keys(placeholderValues).forEach(key => {
-                    question = question.replace(`[${key}]`, placeholderValues[key]);
-                });
+                // Create a completed version of the question
+                let question = currentTemplate ? currentTemplate.template : '';
+                let questionHasPlaceholders = false;
                 
-                // Convert \n to actual line breaks for display
-                question = question.replace(/\\n/g, '\n');
+                if (question) {
+                    // Check if question has placeholders and replace them
+                    const questionPlaceholders = question.match(/\[[^\]]+\]/g) || [];
+                    questionHasPlaceholders = questionPlaceholders.length > 0;
+                    
+                    // Replace placeholders in the question with actual values
+                    Object.keys(placeholderValues).forEach(key => {
+                        const regex = new RegExp(`\\[${key}\\]`, 'g');
+                        question = question.replace(regex, placeholderValues[key]);
+                    });
+                    
+                    // Convert \n to actual line breaks for display
+                    question = question.replace(/\\n/g, '\n');
+                }
                 
-                // DIRECT APPROACH: Get options by specific placeholder IDs
-                const optionA = placeholderValues['CORRECT_OPTION'] || "Correct option not provided";
-                const optionB = placeholderValues['WRONG_OPTION_1'] || "Wrong option 1 not provided";
-                const optionC = placeholderValues['WRONG_OPTION_2'] || "Wrong option 2 not provided";
-                const optionD = placeholderValues['WRONG_OPTION_3'] || "Wrong option 3 not provided";
+                // Get options by specific placeholder IDs
+                const optionA = placeholderValues['CORRECT_OPTION'] || "";
+                const optionB = placeholderValues['WRONG_OPTION_1'] || "";
+                const optionC = placeholderValues['WRONG_OPTION_2'] || "";
+                const optionD = placeholderValues['WRONG_OPTION_3'] || "";
                 
-                console.log("Direct option extraction:", {optionA, optionB, optionC, optionD});
+                console.log("🔍 Generated question:", question);
+                console.log("🔍 Options:", {optionA, optionB, optionC, optionD});
+                console.log("🔍 Has values:", hasValues, "Question has placeholders:", questionHasPlaceholders);
                 
                 return {
                     question,
                     optionA, 
                     optionB,
                     optionC,
-                    optionD
+                    optionD,
+                    hasValues,
+                    questionHasPlaceholders,
+                    placeholderValues
                 };
             }
             
