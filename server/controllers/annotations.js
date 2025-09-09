@@ -1,5 +1,6 @@
 
 // server/controllers/annotations.js
+require('dotenv').config();
 const supabase = require('../config/supabase');
 
 exports.saveAnnotation = async (req, res) => {

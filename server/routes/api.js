@@ -3,7 +3,7 @@
 const express = require('express');
 const router = express.Router();
 const annotationController = require('../controllers/annotations');
-const templateController = require('../controllers/templates');
+const templateController = require('../controllers/templates-supabase');
 
 // Annotation routes
 router.post('/annotations', annotationController.saveAnnotation);

@@ -15,8 +15,10 @@ console.log("Environment variables loaded:", {
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Trust proxy for Heroku
-app.set('trust proxy', true);
+// Trust proxy for Heroku (only in production)
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', true);
+}
 
 // Security middleware with CSP configuration to allow inline scripts/styles
 // and FingerprintJS CDN
@@ -35,12 +37,14 @@ app.use(helmet({
   },
 }));
 
-// Rate limiting
+// Rate limiting with proper trust proxy configuration
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs
   standardHeaders: true,
   legacyHeaders: false,
+  // Only trust proxy when in production (Heroku)
+  trustProxy: process.env.NODE_ENV === 'production'
 });
 app.use('/api', limiter);
 

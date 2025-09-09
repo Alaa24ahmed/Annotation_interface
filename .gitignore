@@ -1,23 +1,15 @@
-# Dependencies
-node_modules/
-
-# Environment variables (contains secrets)
 .env
 .env.local
 .env.production
+
+data/
+*.csv
 
 # System files
 .DS_Store
 .vscode/
 npm-debug.log
 *.log
-
-# Database files (optional - you might want to keep templates.csv)
-# data/
-
-# Build artifacts
-dist/
-build/
 
 # Temporary files
 *.tmp
