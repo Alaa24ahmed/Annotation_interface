@@ -972,14 +972,22 @@
             // Handle ID parameter passing
             const urlParams = new URLSearchParams(window.location.search);
             const pilotId = urlParams.get('ID');
+            const subset = urlParams.get('subset');
             
             if (pilotId && (pilotId === '1' || pilotId === '2' || pilotId === '3')) {
                 console.log('Pilot ID detected on homepage:', pilotId);
+                console.log('Subset parameter detected on homepage:', subset);
                 
-                // Update all annotation links to include the ID parameter
+                // Build the annotation URL with both ID and subset parameters
+                let annotationUrl = `/annotate.html?ID=${pilotId}`;
+                if (subset) {
+                    annotationUrl += `&subset=${subset}`;
+                }
+                
+                // Update all annotation links to include the parameters
                 const annotationLinks = document.querySelectorAll('a[href="/annotate"]');
                 annotationLinks.forEach(link => {
-                    link.href = `/annotate.html?ID=${pilotId}`;
+                    link.href = annotationUrl;
                     console.log('Updated link to:', link.href);
                 });
                 
@@ -993,6 +1001,9 @@
                     demographics = 'Egyptian Arabic, Egypt';
                 }
                 console.log(`Pilot user ${pilotId} detected - Demographics: ${demographics}`);
+                if (subset) {
+                    console.log(`Subset mode: ${subset} (templates ${(subset-1)*10+1}-${subset*10})`);
+                }
             }
         });
     </script>

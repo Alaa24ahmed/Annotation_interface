@@ -16,5 +16,6 @@ if (typeof annotationController.getAnnotations === 'function') {
 
 // Template routes
 router.get('/templates/random', templateController.getRandomTemplate);
+router.get('/templates/subset', templateController.getTemplatesBySubset);
 
 module.exports = router;

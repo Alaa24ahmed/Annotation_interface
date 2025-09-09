@@ -166,6 +166,100 @@ function getSampleTemplates() {
     ];
 }
 
+// Get templates by subset (10 templates per subset)
+const getTemplatesBySubset = async (req, res) => {
+    try {
+        const { subset } = req.query;
+        
+        if (!subset) {
+            return res.status(400).json({ error: 'Subset parameter is required' });
+        }
+        
+        const subsetNum = parseInt(subset);
+        if (isNaN(subsetNum) || subsetNum < 1 || subsetNum > 10) {
+            return res.status(400).json({ error: 'Subset must be a number between 1 and 10' });
+        }
+        
+        console.log(`Getting templates for subset ${subsetNum}...`);
+        
+        // Calculate template range for this subset
+        const startTemplate = (subsetNum - 1) * 10 + 1;
+        const endTemplate = subsetNum * 10;
+        
+        console.log(`Loading templates ${startTemplate} to ${endTemplate} from Supabase...`);
+        
+        const { data: templates, error } = await supabase
+            .from('templates')
+            .select('*')
+            .gte('"No"', startTemplate)
+            .lte('"No"', endTemplate)
+            .order('"No"');
+
+        if (error) {
+            console.error('Error loading templates from Supabase:', error);
+            // Fallback to sample templates filtered by range
+            const sampleTemplates = getSampleTemplates();
+            const filteredSamples = sampleTemplates.filter(t => t.id >= startTemplate && t.id <= endTemplate);
+            return res.json({ templates: filteredSamples, total: filteredSamples.length, subset: subsetNum });
+        }
+
+        if (!templates || templates.length === 0) {
+            console.log(`No templates found for subset ${subsetNum} - using sample templates`);
+            const sampleTemplates = getSampleTemplates();
+            const filteredSamples = sampleTemplates.filter(t => t.id >= startTemplate && t.id <= endTemplate);
+            return res.json({ templates: filteredSamples, total: filteredSamples.length, subset: subsetNum });
+        }
+
+        console.log(`Successfully loaded ${templates.length} templates for subset ${subsetNum}`);
+
+        // Convert Supabase data to the expected format (same as loadTemplatesFromSupabase)
+        const formattedTemplates = templates.map(row => {
+            const template = {
+                id: row.No, // Using "No" column from CSV
+                template: row.Template.trim(),
+                category: (row["Reasoning Category"] || '') + 
+                         (row["Cultural Aspect"] ? ' - ' + row["Cultural Aspect"] : ''),
+                reasoning_category: row["Reasoning Category"] || '',
+                cultural_aspect: row["Cultural Aspect"] || '',
+                template_text: generateTemplateHTML(row.Template),
+                // Wrap option templates in placeholder spans
+                option_a: generateOptionPlaceholder(row["Correct Option Template"] || 'The correct answer', 'CORRECT_OPTION'),
+                option_b: generateOptionPlaceholder(row["Wrong Options Template"] || 'An incorrect answer', 'WRONG_OPTION_1'),
+                option_c: generateOptionPlaceholder(row["Wrong Options Template"] || 'An incorrect answer', 'WRONG_OPTION_2'),
+                option_d: generateOptionPlaceholder(row["Wrong Options Template"] || 'An incorrect answer', 'WRONG_OPTION_3'),
+                
+                // Add example question and options
+                example: {
+                    question: row["Example Question"] || '',
+                    optionA: row["Option 1"] || '',
+                    optionB: row["Option 2"] || '',
+                    optionC: row["Option 3"] || '',
+                    optionD: row["Option 4"] || ''
+                }
+            };
+            
+            return template;
+        });
+
+        console.log(`Returning ${formattedTemplates.length} formatted templates for subset ${subsetNum}`);
+        formattedTemplates.forEach((t, i) => {
+            console.log(`  ${startTemplate + i}. ID: ${t.id}, Template: ${t.template.substring(0, 50)}...`);
+        });
+
+        res.json({ 
+            templates: formattedTemplates, 
+            total: formattedTemplates.length, 
+            subset: subsetNum,
+            range: { start: startTemplate, end: endTemplate }
+        });
+        
+    } catch (error) {
+        console.error('Error getting templates by subset:', error);
+        res.status(500).json({ error: 'Failed to get templates for subset' });
+    }
+};
+
 module.exports = {
-    getRandomTemplate
+    getRandomTemplate,
+    getTemplatesBySubset
 };

@@ -836,6 +836,93 @@
             flex: 1;
             line-height: 1.5;
         }
+        
+        /* Progress indicator for subset mode */
+        .progress-indicator {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(67, 97, 238, 0.2);
+        }
+        
+        /* Completion message for subset mode */
+        .completion-message {
+            text-align: center;
+            padding: 40px;
+            background-color: var(--background-card);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .completion-message h2 {
+            color: var(--success-color);
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+        
+        .completion-message p {
+            color: var(--text-dark);
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+        
+        .completion-stats {
+            background-color: var(--background-light);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .completion-stats div {
+            font-weight: 600;
+            color: var(--text-dark);
+            padding: 8px 0;
+        }
+        
+        /* Progress indicator styles */
+        .progress-indicator {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            font-weight: 600;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(67, 97, 238, 0.3);
+        }
+        
+        /* Completion message styles */
+        .completion-message {
+            text-align: center;
+            padding: 40px;
+            background-color: var(--background-card);
+            border-radius: 15px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            margin: 20px;
+        }
+        
+        .completion-message h2 {
+            color: var(--success-color);
+            margin-bottom: 20px;
+            font-size: 2.2rem;
+        }
+        
+        .completion-message p {
+            color: var(--text-dark);
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
     </style>
 </head>
 <body>
@@ -1030,6 +1117,11 @@
             let currentUserId = null;
             let deviceFingerprint = null;
             
+            // Subset-based template system variables
+            let currentSubset = null;
+            let subsetTemplates = [];
+            let currentTemplateIndex = 0;
+            
             // Existing global variables
             const loadingDiv = document.getElementById('loading');
             const templateContainer = document.getElementById('template-container');
@@ -1176,6 +1268,90 @@
                 return userId;
             }
             
+            // Get subset parameter from URL
+            function getSubsetFromURL() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const subset = urlParams.get('subset');
+                
+                console.log('Subset from URL:', subset);
+                
+                if (subset) {
+                    const subsetNum = parseInt(subset);
+                    if (!isNaN(subsetNum) && subsetNum >= 1 && subsetNum <= 10) {
+                        return subsetNum;
+                    }
+                }
+                
+                return null;
+            }
+            
+            // Load templates for a specific subset
+            async function loadSubsetTemplates(subset) {
+                try {
+                    console.log(`Loading templates for subset ${subset}...`);
+                    
+                    const response = await fetch(`/api/templates/subset?subset=${subset}&t=${new Date().getTime()}`);
+                    console.log("Subset response status:", response.status);
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch subset templates: ' + response.status);
+                    }
+                    
+                    const data = await response.json();
+                    console.log("Received subset data from server:", data);
+                    
+                    if (!data.templates || data.templates.length === 0) {
+                        throw new Error('No templates found for subset ' + subset);
+                    }
+                    
+                    subsetTemplates = data.templates;
+                    currentSubset = subset;
+                    currentTemplateIndex = 0;
+                    
+                    console.log(`Loaded ${subsetTemplates.length} templates for subset ${subset}`);
+                    
+                    return true;
+                } catch (error) {
+                    console.error('Error loading subset templates:', error);
+                    throw error;
+                }
+            }
+            
+            // Get current template from subset
+            function getCurrentSubsetTemplate() {
+                if (!subsetTemplates || subsetTemplates.length === 0 || currentTemplateIndex >= subsetTemplates.length) {
+                    return null;
+                }
+                
+                return subsetTemplates[currentTemplateIndex];
+            }
+            
+            // Move to next template in subset
+            function moveToNextTemplate() {
+                if (currentTemplateIndex < subsetTemplates.length - 1) {
+                    currentTemplateIndex++;
+                    return true;
+                } else {
+                    // All templates completed
+                    return false;
+                }
+            }
+            
+            // Check if all templates in subset are completed
+            function isSubsetCompleted() {
+                return currentTemplateIndex >= subsetTemplates.length;
+            }
+            
+            // Get progress info for display
+            function getSubsetProgress() {
+                return {
+                    current: currentTemplateIndex + 1,
+                    total: subsetTemplates.length,
+                    subset: currentSubset,
+                    completed: isSubsetCompleted()
+                };
+            }
+            
             // Initialize user identification (async)
             async function initUserIdentification() {
                 currentUserId = getUserId();
@@ -1209,8 +1385,17 @@
                     loadingDiv.style.display = 'block';
                     templateContainer.style.display = 'none';
                     
-                    // Fetch a template from the server
-                    fetchRandomTemplate();
+                    // Check if we're in subset mode
+                    const subset = getSubsetFromURL();
+                    
+                    if (subset) {
+                        console.log(`Initializing in subset mode: subset ${subset}`);
+                        await initSubsetMode(subset);
+                    } else {
+                        console.log('Initializing in random template mode');
+                        // Fetch a random template from the server (legacy mode)
+                        fetchRandomTemplate();
+                    }
                     
                     // Setup action buttons
                     const notApplicableBtn = document.getElementById('not-applicable-btn');
@@ -1275,6 +1460,88 @@
                         showSkipModal();
                     });
                 }
+            }
+            
+            // Initialize subset mode
+            async function initSubsetMode(subset) {
+                try {
+                    // Load all templates for this subset
+                    await loadSubsetTemplates(subset);
+                    
+                    // Load the first template in the subset
+                    loadCurrentSubsetTemplate();
+                    
+                    // Update progress display
+                    updateProgressDisplay();
+                    
+                } catch (error) {
+                    console.error('Error initializing subset mode:', error);
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = 'Error loading subset templates: ' + error.message;
+                    statusDiv.style.display = 'block';
+                }
+            }
+            
+            // Load current template from subset
+            function loadCurrentSubsetTemplate() {
+                const template = getCurrentSubsetTemplate();
+                
+                if (!template) {
+                    console.log('No more templates in subset or subset completed');
+                    showCompletionMessage();
+                    return;
+                }
+                
+                console.log(`Loading template ${currentTemplateIndex + 1} of ${subsetTemplates.length} from subset ${currentSubset}`);
+                loadTemplate(template);
+                updateProgressDisplay();
+            }
+            
+            // Update progress display for subset mode
+            function updateProgressDisplay() {
+                if (!currentSubset) return;
+                
+                const progress = getSubsetProgress();
+                
+                // Update page title or add progress indicator
+                const progressElement = document.getElementById('progress-indicator');
+                if (progressElement) {
+                    progressElement.textContent = `Template ${progress.current} of ${progress.total}`;
+                } else {
+                    // Add progress indicator to the page if it doesn't exist
+                    const progressDiv = document.createElement('div');
+                    progressDiv.id = 'progress-indicator';
+                    progressDiv.className = 'progress-indicator';
+                    progressDiv.textContent = `Template ${progress.current} of ${progress.total}`;
+                    
+                    // Insert before the template container
+                    templateContainer.parentNode.insertBefore(progressDiv, templateContainer);
+                }
+                
+                console.log(`Progress: Template ${progress.current} of ${progress.total} in subset ${progress.subset}`);
+            }
+            
+            // Show completion message when all templates are done
+            function showCompletionMessage() {
+                const progress = getSubsetProgress();
+                
+                loadingDiv.style.display = 'none';
+                templateContainer.style.display = 'none';
+                
+                const completionDiv = document.createElement('div');
+                completionDiv.className = 'completion-message';
+                completionDiv.innerHTML = `
+                    <h2>🎉 Congratulations!</h2>
+                    <p>You have successfully completed all ${progress.total} templates.</p>
+                    <p>Thank you for your contribution to the Multicultural Reasoning Benchmark!</p>
+                    <div class="completion-stats">
+                        <div>✅ Templates Completed: ${progress.total}</div>
+                        <div>🌍 Language: ${getPilotUserDemographics(currentUserId).language || 'Unknown'}</div>
+                    </div>
+                `;
+                
+                // Replace the template container with completion message
+                templateContainer.parentNode.replaceChild(completionDiv, templateContainer);
             }
             
             // Update progress based on completeness
@@ -2290,8 +2557,19 @@
                     // Reset progress to step 1
                     updateProgressSteps(1);
                     
-                    // Fetch a new template
-                    fetchRandomTemplate();
+                    // Handle next template based on mode
+                    if (currentSubset) {
+                        // Subset mode: move to next template in subset
+                        if (moveToNextTemplate()) {
+                            loadCurrentSubsetTemplate();
+                        } else {
+                            // All templates in subset completed
+                            showCompletionMessage();
+                        }
+                    } else {
+                        // Legacy random mode
+                        fetchRandomTemplate();
+                    }
                     
                 } catch (error) {
                     console.error('Error in skipTemplateWithReason:', error);
@@ -2304,7 +2582,17 @@
                     statusDiv.textContent = 'Loading a new template...';
                     statusDiv.style.display = 'block';
                     updateProgressSteps(1);
-                    fetchRandomTemplate();
+                    
+                    // Handle next template based on mode (error case)
+                    if (currentSubset) {
+                        if (moveToNextTemplate()) {
+                            loadCurrentSubsetTemplate();
+                        } else {
+                            showCompletionMessage();
+                        }
+                    } else {
+                        fetchRandomTemplate();
+                    }
                 }
             }
             
@@ -2344,9 +2632,20 @@
                     statusDiv.className = 'status success';
                     statusDiv.textContent = 'Annotation submitted successfully!';
                     
-                    // Fetch a new template after a delay
+                    // Handle next template based on mode
                     setTimeout(() => {
-                        fetchRandomTemplate();
+                        if (currentSubset) {
+                            // Subset mode: move to next template in subset
+                            if (moveToNextTemplate()) {
+                                loadCurrentSubsetTemplate();
+                            } else {
+                                // All templates in subset completed
+                                showCompletionMessage();
+                            }
+                        } else {
+                            // Legacy random mode
+                            fetchRandomTemplate();
+                        }
                     }, 2000);
                     
                 } catch (error) {
