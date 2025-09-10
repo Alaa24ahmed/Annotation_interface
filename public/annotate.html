@@ -2285,13 +2285,67 @@
                 // Convert \n to actual line breaks for display
                 question = question.replace(/\\n/g, '\n');
                 
-                // DIRECT APPROACH: Get options by specific placeholder IDs
-                const optionA = placeholderValues['CORRECT_OPTION'] || "Correct option not provided";
-                const optionB = placeholderValues['WRONG_OPTION_1'] || "Wrong option 1 not provided";
-                const optionC = placeholderValues['WRONG_OPTION_2'] || "Wrong option 2 not provided";
-                const optionD = placeholderValues['WRONG_OPTION_3'] || "Wrong option 3 not provided";
+                // ENHANCED APPROACH: Process option templates to resolve nested placeholders
+                let optionA = placeholderValues['CORRECT_OPTION'] || "";
+                let optionB = placeholderValues['WRONG_OPTION_1'] || "";
+                let optionC = placeholderValues['WRONG_OPTION_2'] || "";
+                let optionD = placeholderValues['WRONG_OPTION_3'] || "";
                 
-                console.log("Direct option extraction:", {optionA, optionB, optionC, optionD});
+                // If options are not directly filled, try to get them from template processing
+                if (!optionA && currentTemplate.option_a) {
+                    // Extract the text content from the option template (remove HTML tags)
+                    let optionTemplate = currentTemplate.option_a.replace(/<[^>]*>/g, '');
+                    // Remove the outer brackets if present
+                    if (optionTemplate.startsWith('[') && optionTemplate.endsWith(']')) {
+                        optionTemplate = optionTemplate.substring(1, optionTemplate.length - 1);
+                    }
+                    // Replace any nested placeholders with actual values
+                    Object.keys(placeholderValues).forEach(key => {
+                        optionTemplate = optionTemplate.replace(`[${key}]`, placeholderValues[key]);
+                    });
+                    optionA = optionTemplate;
+                }
+                
+                if (!optionB && currentTemplate.option_b) {
+                    let optionTemplate = currentTemplate.option_b.replace(/<[^>]*>/g, '');
+                    if (optionTemplate.startsWith('[') && optionTemplate.endsWith(']')) {
+                        optionTemplate = optionTemplate.substring(1, optionTemplate.length - 1);
+                    }
+                    Object.keys(placeholderValues).forEach(key => {
+                        optionTemplate = optionTemplate.replace(`[${key}]`, placeholderValues[key]);
+                    });
+                    optionB = optionTemplate;
+                }
+                
+                if (!optionC && currentTemplate.option_c) {
+                    let optionTemplate = currentTemplate.option_c.replace(/<[^>]*>/g, '');
+                    if (optionTemplate.startsWith('[') && optionTemplate.endsWith(']')) {
+                        optionTemplate = optionTemplate.substring(1, optionTemplate.length - 1);
+                    }
+                    Object.keys(placeholderValues).forEach(key => {
+                        optionTemplate = optionTemplate.replace(`[${key}]`, placeholderValues[key]);
+                    });
+                    optionC = optionTemplate;
+                }
+                
+                if (!optionD && currentTemplate.option_d) {
+                    let optionTemplate = currentTemplate.option_d.replace(/<[^>]*>/g, '');
+                    if (optionTemplate.startsWith('[') && optionTemplate.endsWith(']')) {
+                        optionTemplate = optionTemplate.substring(1, optionTemplate.length - 1);
+                    }
+                    Object.keys(placeholderValues).forEach(key => {
+                        optionTemplate = optionTemplate.replace(`[${key}]`, placeholderValues[key]);
+                    });
+                    optionD = optionTemplate;
+                }
+                
+                // Fallback to default text if still empty
+                if (!optionA) optionA = "Correct option not provided";
+                if (!optionB) optionB = "Wrong option 1 not provided";
+                if (!optionC) optionC = "Wrong option 2 not provided";
+                if (!optionD) optionD = "Wrong option 3 not provided";
+                
+                console.log("Enhanced option extraction:", {optionA, optionB, optionC, optionD});
                 
                 return {
                     question,
