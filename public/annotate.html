@@ -1311,9 +1311,14 @@
                     
                     subsetTemplates = data.templates;
                     currentSubset = subset;
-                    currentTemplateIndex = 0;
+                    
+                    // Set starting index based on completed templates
+                    const completedKey = `subset_${subset}_user_${currentUserId}_completed`;
+                    const completedTemplates = JSON.parse(localStorage.getItem(completedKey) || '[]');
+                    currentTemplateIndex = completedTemplates.length; // Start from next uncompleted template
                     
                     console.log(`Loaded ${subsetTemplates.length} templates for subset ${subset}`);
+                    console.log(`Starting from template ${currentTemplateIndex + 1} (${completedTemplates.length} already completed)`);
                     
                     return true;
                 } catch (error) {
@@ -1322,35 +1327,67 @@
                 }
             }
             
-            // Get current template from subset
+            // Get current template from subset (skip completed ones)
             function getCurrentSubsetTemplate() {
-                if (!subsetTemplates || subsetTemplates.length === 0 || currentTemplateIndex >= subsetTemplates.length) {
+                if (!subsetTemplates || subsetTemplates.length === 0) {
                     return null;
                 }
                 
-                return subsetTemplates[currentTemplateIndex];
+                // Find first uncompleted template starting from currentTemplateIndex
+                const completedKey = `subset_${currentSubset}_user_${currentUserId}_completed`;
+                const completedTemplates = JSON.parse(localStorage.getItem(completedKey) || '[]');
+                
+                for (let i = currentTemplateIndex; i < subsetTemplates.length; i++) {
+                    const template = subsetTemplates[i];
+                    if (!completedTemplates.includes(template.id)) {
+                        currentTemplateIndex = i; // Update index to this uncompleted template
+                        return template;
+                    }
+                }
+                
+                // All templates completed
+                return null;
             }
             
-            // Move to next template in subset
+            // Move to next template in subset (skip completed ones)
             function moveToNextTemplate() {
-                if (currentTemplateIndex < subsetTemplates.length - 1) {
-                    currentTemplateIndex++;
-                    return true;
-                } else {
-                    // All templates completed
-                    return false;
+                const completedKey = `subset_${currentSubset}_user_${currentUserId}_completed`;
+                const completedTemplates = JSON.parse(localStorage.getItem(completedKey) || '[]');
+                
+                // Find next uncompleted template
+                for (let i = currentTemplateIndex + 1; i < subsetTemplates.length; i++) {
+                    if (!completedTemplates.includes(subsetTemplates[i].id)) {
+                        currentTemplateIndex = i;
+                        return true;
+                    }
                 }
+                
+                // No more uncompleted templates
+                return false;
             }
             
             // Check if all templates in subset are completed
             function isSubsetCompleted() {
-                return currentTemplateIndex >= subsetTemplates.length;
+                if (!subsetTemplates || !currentSubset || !currentUserId) return false;
+                
+                const completedKey = `subset_${currentSubset}_user_${currentUserId}_completed`;
+                const completedTemplates = JSON.parse(localStorage.getItem(completedKey) || '[]');
+                
+                // Check if all template IDs are in completed list
+                return subsetTemplates.every(template => completedTemplates.includes(template.id));
             }
             
             // Get progress info for display
             function getSubsetProgress() {
+                if (!subsetTemplates || !currentSubset || !currentUserId) {
+                    return { current: 0, total: 0, subset: null, completed: false };
+                }
+                
+                const completedKey = `subset_${currentSubset}_user_${currentUserId}_completed`;
+                const completedTemplates = JSON.parse(localStorage.getItem(completedKey) || '[]');
+                
                 return {
-                    current: currentTemplateIndex + 1,
+                    current: completedTemplates.length + 1, // Next template to work on
                     total: subsetTemplates.length,
                     subset: currentSubset,
                     completed: isSubsetCompleted()
@@ -2712,7 +2749,7 @@
                             
                             if (response.ok) {
                                 console.log('Template skip logged successfully');
-                                markTemplateCompleted(); // Mark template as completed in localStorage
+                                markTemplateCompleted(currentTemplate.id); // Mark template as completed in localStorage
                             } else {
                                 console.warn('Failed to log template skip');
                             }
