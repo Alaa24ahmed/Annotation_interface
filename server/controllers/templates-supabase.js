@@ -22,7 +22,7 @@ function generateTemplateHTML(templateText) {
     return html;
 }
 
-// Generate option placeholder
+// Generate option placeholder - SIMPLIFIED (no nested placeholders)
 function generateOptionPlaceholder(optionText, placeholderId) {
     if (!optionText) return '';
     
@@ -31,6 +31,9 @@ function generateOptionPlaceholder(optionText, placeholderId) {
     if (content.startsWith('[') && content.endsWith(']')) {
         content = content.substring(1, content.length - 1);
     }
+    
+    // Remove any nested placeholders - just use simple text
+    content = content.replace(/\[([^\]]+)\]/g, '$1');
     
     return `<span class="placeholder" data-placeholder-id="${placeholderId}">[${content}]</span>`;
 }
