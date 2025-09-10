@@ -2023,6 +2023,9 @@
                 optionCTemplate.innerHTML = formatLineBreaks(template.option_c) || '<span class="placeholder" data-placeholder-id="WRONG_OPTION_2">[An incorrect option]</span>';
                 optionDTemplate.innerHTML = formatLineBreaks(template.option_d) || '<span class="placeholder" data-placeholder-id="WRONG_OPTION_3">[An incorrect option]</span>';
                 
+                // Setup placeholder functionality for question and options (do this immediately after setting innerHTML)
+                initPlaceholders();
+                
                 // Load example directly from template data
                 if (template.example) {
                     document.getElementById('example-question').innerHTML = formatLineBreaks(template.example.question) || "Example question not available";
@@ -2058,9 +2061,6 @@
                 
                 // Reset progress steps
                 updateProgressSteps(1);
-                
-                // Setup placeholder functionality for question and options
-                initPlaceholders();
                 
                 // NEW: Start timing the template interaction
                 templateStartTime = Date.now();
