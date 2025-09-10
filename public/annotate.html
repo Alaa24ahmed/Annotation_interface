@@ -1818,12 +1818,14 @@
                     autoResizeInput(this); // Resize as user types
                     validateAnnotation();
                     updateEnglishColumn(); // Update the English column in real-time
+                    updateTemplateSection(); // Update the template section in real-time
                     saveTemplateProgress();
                 });
                 
                 input.addEventListener('blur', function() {
                     saveTemplateProgress(); // Always save on blur
                     updateEnglishColumn(); // Update the English column when done editing
+                    updateTemplateSection(); // Update the template section when done editing
                     
                     if (this.value.trim() === '') {
                         // Convert back to placeholder if empty
@@ -1831,6 +1833,7 @@
                         this.parentNode.replaceChild(newPlaceholder, this);
                         validateAnnotation();
                         updateEnglishColumn(); // Update again after converting back to placeholder
+                        updateTemplateSection(); // Update template section after converting back to placeholder
                         saveTemplateProgress();
                     }
                 });
@@ -2079,6 +2082,7 @@
                         // Initial validation and save
                         validateAnnotation();
                         updateEnglishColumn(); // Update English column when placeholder becomes input
+                        updateTemplateSection(); // Update template section when placeholder becomes input
                         saveTemplateProgress();
                     });
                 });
@@ -2109,6 +2113,7 @@
                     
                     validateAnnotation();
                     updateEnglishColumn(); // Update English column when placeholder becomes input
+                    updateTemplateSection(); // Update template section when placeholder becomes input
                     saveTemplateProgress();
                 });
                 
@@ -2164,6 +2169,45 @@
                 }
             }
             
+            // Function to update the template section in real-time
+            function updateTemplateSection() {
+                try {
+                    const completed = getCompletedQuestion();
+                    
+                    // Only update if we have filled placeholders
+                    if (!completed.placeholderValues || Object.keys(completed.placeholderValues).length === 0) {
+                        return;
+                    }
+                    
+                    // Update option templates with resolved nested placeholders
+                    const optionTemplateElements = [
+                        { elem: document.getElementById('option-a-template'), originalTemplate: currentTemplate.option_a },
+                        { elem: document.getElementById('option-b-template'), originalTemplate: currentTemplate.option_b },
+                        { elem: document.getElementById('option-c-template'), originalTemplate: currentTemplate.option_c },
+                        { elem: document.getElementById('option-d-template'), originalTemplate: currentTemplate.option_d }
+                    ];
+                    
+                    optionTemplateElements.forEach(option => {
+                        if (option.elem && option.originalTemplate) {
+                            // Process the original template HTML
+                            let updatedTemplate = option.originalTemplate;
+                            
+                            // Replace placeholders in the template with actual values
+                            Object.keys(completed.placeholderValues).forEach(key => {
+                                const regex = new RegExp(`\\[${key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\]`, 'g');
+                                updatedTemplate = updatedTemplate.replace(regex, completed.placeholderValues[key]);
+                            });
+                            
+                            // Update the element with the resolved template
+                            option.elem.innerHTML = updatedTemplate;
+                        }
+                    });
+                    
+                } catch (error) {
+                    console.log('Error updating template section:', error);
+                }
+            }
+            
             // Validation function to check if all fields are filled
             function validateAnnotation() {
                 console.log('🔍 VALIDATION START - Current time:', new Date().toISOString());
@@ -2175,6 +2219,7 @@
                 
                 // Update the English column with real-time content
                 updateEnglishColumn();
+                updateTemplateSection();
                 
                 console.log('📊 DOM State - Placeholders:', placeholders.length, 'Inputs:', inputs.length);
                 console.log('🎯 Submit button current state - Disabled:', submitBtn.disabled);
