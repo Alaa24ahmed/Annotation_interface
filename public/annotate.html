@@ -2116,6 +2116,7 @@
             }
             
             // Function to update the English column with real-time content
+            // Function to update the English column with real-time content
             function updateEnglishColumn() {
                 try {
                     const completed = getCompletedQuestion();
@@ -2127,8 +2128,13 @@
                     const englishOptionC = document.getElementById('english-option-c');
                     const englishOptionD = document.getElementById('english-option-d');
                     
-                    if (completed.question && completed.question !== currentTemplate.template) {
-                        questionDisplay.innerHTML = formatLineBreaks(completed.question);
+                    // Check if we have any filled placeholders (better check than comparing to template)
+                    const hasFilledPlaceholders = completed.placeholderValues && Object.keys(completed.placeholderValues).length > 0;
+                    
+                    if (hasFilledPlaceholders && completed.question) {
+                        // Convert \n to <br> for proper line breaks in HTML
+                        const formattedQuestion = completed.question.replace(/\n/g, '<br>');
+                        questionDisplay.innerHTML = formattedQuestion;
                         questionDisplay.classList.add('filled');
                     } else {
                         questionDisplay.textContent = 'Complete the template above to see your question here';
@@ -2145,7 +2151,7 @@
                     
                     options.forEach(option => {
                         if (option.value && option.value.trim() && !option.value.includes('not provided')) {
-                            option.elem.innerHTML = formatLineBreaks(option.value);
+                            option.elem.textContent = option.value;
                             option.elem.classList.add('filled');
                         } else {
                             option.elem.textContent = option.placeholder;
@@ -2352,7 +2358,8 @@
                     optionA, 
                     optionB,
                     optionC,
-                    optionD
+                    optionD,
+                    placeholderValues
                 };
             }
             
