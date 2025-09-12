@@ -955,11 +955,10 @@
             <h3>Steps to Complete <span class="toggle-directions" title="Click to expand/collapse">[?]</span></h3>
             <div class="directions-content">
                 <ol class="directions-list">
-                    <li>Examine template format.</li>
-                    <li>Look at the example completed question.</li>
-                    <li>Fill in the placeholders to form a new question that reflects your culture (in English).</li>
-                    <li>Provide translations in your own language.</li>
-                    <li>Review and submit.</li>
+                    <li><strong>Examine</strong> template format and example completed question.</li>
+                    <li><strong>Fill placeholders</strong> with authentic content from your culture (in English). Use search engines to fact-check details.</li>
+                    <li><strong>Translate</strong> the complete question and options to your native language (and dialect if applicable).</li>
+                    <li><strong>Review</strong> for accuracy and authenticity, then submit.</li>
                 </ol>
             </div>
         </div>
@@ -996,10 +995,10 @@
             </div>
         </fieldset>
 
-        <!-- Example Question (MOVED UP) -->
-        <fieldset class="example-fieldset">
-            <legend>Example</legend>
-            <div class="example-container">
+        <!-- Example Question (Collapsible) -->
+        <div class="directions-panel">
+            <h3>Example Completed Question <span class="toggle-example" title="Click to expand/collapse">[−]</span></h3>
+            <div class="example-content">
                 <h4 id="example-title">Here's how this question might look when completed:</h4>
                 <div class="example-question-container">
                     <p><strong>Question:</strong></p>
@@ -1029,7 +1028,7 @@
                     </div>
                 </div>
             </div>
-        </fieldset>
+        </div>
 
         <!-- Side-by-Side English & Translation -->
         <fieldset>
@@ -1476,6 +1475,23 @@
                             toggle.textContent = '[+]';
                         }
                     });
+                    
+                    // Setup example panel toggle (find the second directions-panel which is the example)
+                    const examplePanel = document.querySelectorAll('.directions-panel')[1];
+                    if (examplePanel) {
+                        examplePanel.querySelector('h3').addEventListener('click', function() {
+                            const content = examplePanel.querySelector('.example-content');
+                            const toggle = examplePanel.querySelector('.toggle-example');
+                            
+                            if (content.style.display === 'none') {
+                                content.style.display = 'block';
+                                toggle.textContent = '[−]';
+                            } else {
+                                content.style.display = 'none';
+                                toggle.textContent = '[+]';
+                            }
+                        });
+                    }
                 } catch (error) {
                     console.error('Initialization error:', error);
                     // Continue with existing init even if fingerprinting fails
