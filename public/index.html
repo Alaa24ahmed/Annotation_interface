@@ -988,7 +988,7 @@
             
             // Handle ID parameter passing
             const urlParams = new URLSearchParams(window.location.search);
-            const pilotId = urlParams.get('ID');
+            const pilotId = urlParams.get('id');
             const subset = urlParams.get('subset');
             
             if (pilotId && (pilotId === '742891' || pilotId === '586234' || pilotId === '193847')) {
@@ -996,7 +996,7 @@
                 console.log('Subset parameter detected on homepage:', subset);
                 
                 // Build the annotation URL with both ID and subset parameters
-                let annotationUrl = `/annotate.html?ID=${pilotId}`;
+                let annotationUrl = `/annotate.html?id=${pilotId}`;
                 if (subset) {
                     annotationUrl += `&subset=${subset}`;
                 }
