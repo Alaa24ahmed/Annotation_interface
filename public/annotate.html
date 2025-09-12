@@ -1206,15 +1206,15 @@
             function getPilotUserDemographics(userId) {
                 console.log('getPilotUserDemographics called with userId:', userId, 'type:', typeof userId);
                 
-                // Three specific pilot IDs for testing
-                if (userId === '1') {
-                    console.log('Matched pilot ID 1 - returning Chinese demographics');
+                // Pilot IDs for testing
+                if (userId === '742891') {
+                    console.log('Matched pilot ID 742891 - returning Chinese demographics');
                     return { language: 'Chinese', country: 'China' };
-                } else if (userId === '2') {
-                    console.log('Matched pilot ID 2 - returning Indonesian demographics');
+                } else if (userId === '586234') {
+                    console.log('Matched pilot ID 586234 - returning Indonesian demographics');
                     return { language: 'Indonesian', country: 'Indonesia' };
-                } else if (userId === '3') {
-                    console.log('Matched pilot ID 3 - returning Egyptian Arabic demographics');
+                } else if (userId === '193847') {
+                    console.log('Matched pilot ID 193847 - returning Egyptian Arabic demographics');
                     return { language: 'Egyptian Arabic', country: 'Egypt' };
                 }
                 
@@ -1231,7 +1231,7 @@
                 console.log('URL params:', window.location.search);
                 console.log('Extracted pilot ID:', pilotId, 'type:', typeof pilotId);
                 
-                if (pilotId && (pilotId === '1' || pilotId === '2' || pilotId === '3')) {
+                if (pilotId && (pilotId === '742891' || pilotId === '586234' || pilotId === '193847')) {
                     console.log('Valid pilot user detected:', pilotId);
                     localStorage.setItem('pilotId', pilotId);
                     return pilotId;
@@ -1240,7 +1240,7 @@
                 // Check if we have stored Pilot ID
                 const storedPilotId = localStorage.getItem('pilotId');
                 console.log('Stored pilot ID:', storedPilotId);
-                if (storedPilotId && (storedPilotId === '1' || storedPilotId === '2' || storedPilotId === '3')) {
+                if (storedPilotId && (storedPilotId === '742891' || storedPilotId === '586234' || storedPilotId === '193847')) {
                     console.log('Returning stored pilot user:', storedPilotId);
                     return storedPilotId;
                 }
@@ -1406,7 +1406,7 @@
                     fingerprint: deviceFingerprint,
                     language: demographics.language,
                     country: demographics.country,
-                    isPilotUser: currentUserId === '1' || currentUserId === '2' || currentUserId === '3',
+                    isPilotUser: currentUserId === '742891' || currentUserId === '586234' || currentUserId === '193847',
                     isProlificUser: currentUserId.startsWith('6') || currentUserId.startsWith('5')
                 });
                 

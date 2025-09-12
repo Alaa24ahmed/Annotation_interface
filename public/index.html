@@ -991,7 +991,7 @@
             const pilotId = urlParams.get('ID');
             const subset = urlParams.get('subset');
             
-            if (pilotId && (pilotId === '1' || pilotId === '2' || pilotId === '3')) {
+            if (pilotId && (pilotId === '742891' || pilotId === '586234' || pilotId === '193847')) {
                 console.log('Pilot ID detected on homepage:', pilotId);
                 console.log('Subset parameter detected on homepage:', subset);
                 
@@ -1010,11 +1010,11 @@
                 
                 // Show debug info for pilot users
                 let demographics;
-                if (pilotId === '1') {
+                if (pilotId === '742891') {
                     demographics = 'Chinese, China';
-                } else if (pilotId === '2') {
+                } else if (pilotId === '586234') {
                     demographics = 'Indonesian, Indonesia';
-                } else if (pilotId === '3') {
+                } else if (pilotId === '193847') {
                     demographics = 'Egyptian Arabic, Egypt';
                 }
                 console.log(`Pilot user ${pilotId} detected - Demographics: ${demographics}`);
