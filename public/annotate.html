@@ -2351,7 +2351,7 @@
                 
                 // Replace placeholders in the question with actual values
                 Object.keys(placeholderValues).forEach(key => {
-                    question = question.replace(`[${key}]`, placeholderValues[key]);
+                    question = question.replaceAll(`[${key}]`, placeholderValues[key]);
                 });
                 
                 // Convert \n to actual line breaks for display
