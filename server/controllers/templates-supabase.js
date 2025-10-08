@@ -70,6 +70,8 @@ async function loadTemplatesFromSupabase() {
                 reasoning_category: row["Reasoning Category"] || '',
                 cultural_aspect: row["Cultural Aspect"] || '',
                 template_text: generateTemplateHTML(row.Template),
+                // Add note field from CSV
+                note: row["note"] || '', // Include note field, empty string if no note
                 // Wrap option templates in placeholder spans
                 option_a: generateOptionPlaceholder(row["Correct Option Template"] || 'The correct answer', 'CORRECT_OPTION'),
                 option_b: generateOptionPlaceholder(row["Wrong Options Template"] || 'An incorrect answer', 'WRONG_OPTION_1'),
@@ -189,6 +191,8 @@ function formatSingleTemplate(row) {
         reasoning_category: row["Reasoning Category"] || '',
         cultural_aspect: row["Cultural Aspect"] || '',
         template_text: generateTemplateHTML(row.Template),
+        // Add note field from CSV
+        note: row["note"] || '', // Include note field, empty string if no note
         // Wrap option templates in placeholder spans
         option_a: generateOptionPlaceholder(row["Correct Option Template"] || 'The correct answer', 'CORRECT_OPTION'),
         option_b: generateOptionPlaceholder(row["Wrong Options Template"] || 'An incorrect answer', 'WRONG_OPTION_1'),

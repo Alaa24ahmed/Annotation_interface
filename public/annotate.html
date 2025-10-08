@@ -969,6 +969,9 @@
         <fieldset>
             <legend>Question</legend>
             <p id="template-text"></p>
+            <div id="template-note" style="display: none; margin-top: 10px; padding: 10px; background-color: #f0f8ff; border-left: 4px solid #007bff; font-style: italic;">
+                <strong>Note:</strong> <span id="template-note-text"></span>
+            </div>
         </fieldset>
         
         <!-- Options Template -->
@@ -1125,6 +1128,8 @@
             const loadingDiv = document.getElementById('loading');
             const templateContainer = document.getElementById('template-container');
             const templateText = document.getElementById('template-text');
+            const templateNote = document.getElementById('template-note');
+            const templateNoteText = document.getElementById('template-note-text');
             const optionATemplate = document.getElementById('option-a-template');
             const optionBTemplate = document.getElementById('option-b-template');
             const optionCTemplate = document.getElementById('option-c-template');
@@ -1393,8 +1398,51 @@
                 };
             }
             
+            // Check for template version changes and reset if needed
+            function checkAndResetForNewTemplates() {
+                const CURRENT_TEMPLATE_VERSION = "v2.0"; // Update this when you upload new templates
+                const storedVersion = localStorage.getItem('templateVersion');
+                
+                if (storedVersion !== CURRENT_TEMPLATE_VERSION) {
+                    console.log('🔄 New template version detected, performing one-time reset...');
+                    console.log('Previous version:', storedVersion, '→ Current version:', CURRENT_TEMPLATE_VERSION);
+                    
+                    // Clear all progress-related localStorage but keep user identification
+                    const keysToKeep = [
+                        'pilotId',           // Keep pilot ID assignments
+                        'prolificPID',       // Keep Prolific user IDs
+                        'devUserId'          // Keep development user IDs
+                    ];
+                    
+                    // Also keep fingerprint data
+                    const fingerprintKeys = Object.keys(localStorage).filter(key => key.startsWith('fingerprint_'));
+                    keysToKeep.push(...fingerprintKeys);
+                    
+                    // Get all localStorage keys and remove the ones we don't want to keep
+                    const allKeys = Object.keys(localStorage);
+                    const keysToRemove = allKeys.filter(key => !keysToKeep.includes(key));
+                    
+                    console.log('🗑️ Removing progress data:', keysToRemove.length, 'keys');
+                    console.log('Keys being removed:', keysToRemove);
+                    keysToRemove.forEach(key => {
+                        localStorage.removeItem(key);
+                    });
+                    
+                    // Set the new version
+                    localStorage.setItem('templateVersion', CURRENT_TEMPLATE_VERSION);
+                    
+                    console.log('✅ Reset complete - users will start fresh with new templates');
+                    console.log('✅ User identification preserved:', keysToKeep);
+                } else {
+                    console.log('✅ Template version current:', CURRENT_TEMPLATE_VERSION);
+                }
+            }
+
             // Initialize user identification (async)
             async function initUserIdentification() {
+                // First check for template version changes and do one-time reset if needed
+                checkAndResetForNewTemplates();
+                
                 currentUserId = getUserId();
                 deviceFingerprint = await getConsistentFingerprint();
                 
@@ -2089,6 +2137,16 @@
                 
                 // Update template text for question
                 templateText.innerHTML = formatLineBreaks(template.template_text);
+                
+                // Handle template note display
+                if (template.note && template.note.trim() !== '') {
+                    templateNoteText.innerHTML = formatLineBreaks(template.note.trim());
+                    templateNote.style.display = 'block';
+                    console.log('📝 Template note displayed:', template.note.trim());
+                } else {
+                    templateNote.style.display = 'none';
+                    console.log('📝 No note for this template');
+                }
                 
                 // Update template text for options - use the actual template content from CSV
                 optionATemplate.innerHTML = formatLineBreaks(template.option_a) || '<span class="placeholder" data-placeholder-id="CORRECT_OPTION">[The correct option]</span>';
