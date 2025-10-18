@@ -407,6 +407,40 @@
             background-color: var(--error-color);
         }
 
+        /* True-False Preview Styles */
+        .true-false-preview {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .true-false-item {
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: #f8f9fa;
+        }
+
+        .true-false-item p {
+            margin: 0 0 8px 0;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .statement-content {
+            padding: 12px;
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .statement-content.translation {
+            background-color: #f0f8ff;
+            border-left: 4px solid var(--primary-color);
+        }
+
         .progress-container {
           margin: 30px auto;
           max-width: 600px;
@@ -2737,6 +2771,25 @@
                                 <div class="option-item">
                                     <div class="option-label">D.</div>
                                     <div class="option-content">${translatedOptionD}</div>
+                                </div>
+                            </div>
+                        </fieldset>
+                        
+                        <fieldset>
+                            <legend>True-False Questions</legend>
+                            <div class="true-false-preview">
+                                <div class="true-false-item">
+                                    <p><strong>TRUE Statement (English):</strong></p>
+                                    <div class="statement-content">${trueStatementEnglish.textContent}</div>
+                                    <p><strong>TRUE Statement (Translation):</strong></p>
+                                    <div class="statement-content translation">${trueStatementTranslation.value}</div>
+                                </div>
+                                
+                                <div class="true-false-item">
+                                    <p><strong>FALSE Statement (English):</strong></p>
+                                    <div class="statement-content">${falseStatementEnglish.textContent}</div>
+                                    <p><strong>FALSE Statement (Translation):</strong></p>
+                                    <div class="statement-content translation">${falseStatementTranslation.value}</div>
                                 </div>
                             </div>
                         </fieldset>
