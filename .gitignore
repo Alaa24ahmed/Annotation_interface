@@ -8,6 +8,9 @@ node_modules/
 
 # Data files (prevent data leakage)
 data/
+
+# Backup files
+public/annotate_backup.html
 *.csv
 
 # System files
@@ -24,10 +27,6 @@ build/
 # Temporary files
 *.tmp
 *.temp
-
-# Backup files
-*_backup.html
-annotate_backup.html
 
 # IDE files
 .idea/

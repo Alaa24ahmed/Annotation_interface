@@ -2462,25 +2462,31 @@
                         });
                     }
                     
-                    // Replace [OPTION A], [OPTION B], etc. with generated option content if available
-                    if (completed.optionA) {
-                        trueStatement = trueStatement.replace(/\[OPTION A\]/g, completed.optionA);
-                        falseStatement = falseStatement.replace(/\[OPTION A\]/g, completed.optionA);
+                    // Replace [OPTION A], [OPTION B], etc. with user-filled option values
+                    // Map the correct placeholder values to option letters
+                    const optionA_value = completed.placeholderValues['CORRECT_OPTION'];
+                    const optionB_value = completed.placeholderValues['WRONG_OPTION_1'];
+                    const optionC_value = completed.placeholderValues['WRONG_OPTION_2'];
+                    const optionD_value = completed.placeholderValues['WRONG_OPTION_3'];
+                    
+                    if (optionA_value) {
+                        trueStatement = trueStatement.replace(/\[OPTION A\]/g, optionA_value);
+                        falseStatement = falseStatement.replace(/\[OPTION A\]/g, optionA_value);
                         hasUpdates = true;
                     }
-                    if (completed.optionB) {
-                        trueStatement = trueStatement.replace(/\[OPTION B\]/g, completed.optionB);
-                        falseStatement = falseStatement.replace(/\[OPTION B\]/g, completed.optionB);
+                    if (optionB_value) {
+                        trueStatement = trueStatement.replace(/\[OPTION B\]/g, optionB_value);
+                        falseStatement = falseStatement.replace(/\[OPTION B\]/g, optionB_value);
                         hasUpdates = true;
                     }
-                    if (completed.optionC) {
-                        trueStatement = trueStatement.replace(/\[OPTION C\]/g, completed.optionC);
-                        falseStatement = falseStatement.replace(/\[OPTION C\]/g, completed.optionC);
+                    if (optionC_value) {
+                        trueStatement = trueStatement.replace(/\[OPTION C\]/g, optionC_value);
+                        falseStatement = falseStatement.replace(/\[OPTION C\]/g, optionC_value);
                         hasUpdates = true;
                     }
-                    if (completed.optionD) {
-                        trueStatement = trueStatement.replace(/\[OPTION D\]/g, completed.optionD);
-                        falseStatement = falseStatement.replace(/\[OPTION D\]/g, completed.optionD);
+                    if (optionD_value) {
+                        trueStatement = trueStatement.replace(/\[OPTION D\]/g, optionD_value);
+                        falseStatement = falseStatement.replace(/\[OPTION D\]/g, optionD_value);
                         hasUpdates = true;
                     }
                     
@@ -2616,23 +2622,11 @@
                 // Convert \n to actual line breaks for display
                 question = question.replace(/\\n/g, '\n');
                 
-                // DON'T use example options - let options remain as placeholders until user fills them
-                // Get the actual user-filled values from the option input fields
-                const optionAInput = document.querySelector('input[data-placeholder-id="OPTION A"]');
-                const optionBInput = document.querySelector('input[data-placeholder-id="OPTION B"]');
-                const optionCInput = document.querySelector('input[data-placeholder-id="OPTION C"]');
-                const optionDInput = document.querySelector('input[data-placeholder-id="OPTION D"]');
-                
-                let optionA = optionAInput ? optionAInput.value : "[OPTION A]";
-                let optionB = optionBInput ? optionBInput.value : "[OPTION B]";
-                let optionC = optionCInput ? optionCInput.value : "[OPTION C]";
-                let optionD = optionDInput ? optionDInput.value : "[OPTION D]";
-                
-                // If inputs are empty, keep as placeholders
-                if (!optionA.trim()) optionA = "[OPTION A]";
-                if (!optionB.trim()) optionB = "[OPTION B]";
-                if (!optionC.trim()) optionC = "[OPTION C]";
-                if (!optionD.trim()) optionD = "[OPTION D]";
+                // SIMPLIFIED APPROACH: Just use direct placeholder values for options
+                let optionA = placeholderValues['CORRECT_OPTION'] || "Correct option not provided";
+                let optionB = placeholderValues['WRONG_OPTION_1'] || "Wrong option 1 not provided";
+                let optionC = placeholderValues['WRONG_OPTION_2'] || "Wrong option 2 not provided";
+                let optionD = placeholderValues['WRONG_OPTION_3'] || "Wrong option 3 not provided";
                 
 
                 
