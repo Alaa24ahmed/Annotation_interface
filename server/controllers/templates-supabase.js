@@ -66,9 +66,9 @@ async function loadTemplatesFromSupabase() {
                 id: row.No, // Using "No" column from CSV
                 template: row.Template.trim(),
                 category: (row["Reasoning Category"] || '') + 
-                         (row["Cultural Aspect"] ? ' - ' + row["Cultural Aspect"] : ''),
+                         (row["Cultural Aspects"] ? ' - ' + row["Cultural Aspects"] : ''),
                 reasoning_category: row["Reasoning Category"] || '',
-                cultural_aspect: row["Cultural Aspect"] || '',
+                cultural_aspect: row["Cultural Aspects"] || '',
                 template_text: generateTemplateHTML(row.Template),
                 // Add note field from CSV
                 note: row["note"] || '', // Include note field, empty string if no note
@@ -190,9 +190,9 @@ function formatSingleTemplate(row) {
         id: row.No, // Using "No" column from CSV
         template: row.Template.trim(),
         category: (row["Reasoning Category"] || '') + 
-                 (row["Cultural Aspect"] ? ' - ' + row["Cultural Aspect"] : ''),
+                 (row["Cultural Aspects"] ? ' - ' + row["Cultural Aspects"] : ''),
         reasoning_category: row["Reasoning Category"] || '',
-        cultural_aspect: row["Cultural Aspect"] || '',
+        cultural_aspect: row["Cultural Aspects"] || '',
         template_text: generateTemplateHTML(row.Template),
         // Add note field from CSV
         note: row["note"] || '', // Include note field, empty string if no note

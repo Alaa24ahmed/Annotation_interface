@@ -382,9 +382,9 @@ async function loadTemplatesFromCSV() {
                         id: parseInt(row.No),
                         template: row.Template.trim(),
                         category: (row['Reasoning Category'] || '') + 
-                                ((row['Cultural Aspect '] || row['Cultural Aspect']) ? ' - ' + (row['Cultural Aspect '] || row['Cultural Aspect']) : ''),
+                                ((row['Cultural Aspects '] || row['Cultural Aspects']) ? ' - ' + (row['Cultural Aspects '] || row['Cultural Aspects']) : ''),
                         reasoning_category: row['Reasoning Category'] || '',
-                        cultural_aspect: row['Cultural Aspect '] || row['Cultural Aspect'] || '',
+                        cultural_aspect: row['Cultural Aspects '] || row['Cultural Aspects'] || '',
                         template_text: generateTemplateHTML(row.Template),
                         // Wrap option templates in placeholder spans
                         option_a: generateOptionPlaceholder(row['Correct Option Template'] || 'The correct answer', 'CORRECT_OPTION'),
