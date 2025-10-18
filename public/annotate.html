@@ -1585,7 +1585,8 @@
                     // Add event listeners for translation inputs to update progress
                     const translationInputs = [
                         translationQuestion, translationOptionA, 
-                        translationOptionB, translationOptionC, translationOptionD
+                        translationOptionB, translationOptionC, translationOptionD,
+                        trueStatementTranslation, falseStatementTranslation
                     ];
                     
                     translationInputs.forEach(input => {
@@ -1829,6 +1830,9 @@
                     translationOptionB: translationOptionB.value || '',
                     translationOptionC: translationOptionC.value || '',
                     translationOptionD: translationOptionD.value || '',
+                    // True-False translation fields
+                    trueFalseTranslationTrue: trueStatementTranslation.value || '',
+                    trueFalseTranslationFalse: falseStatementTranslation.value || '',
                     // Placeholder fields
                     placeholders: {}
                 };
@@ -1875,6 +1879,12 @@
                         translationOptionB.value = data.translationOptionB || '';
                         translationOptionC.value = data.translationOptionC || '';
                         translationOptionD.value = data.translationOptionD || '';
+                    }
+                    
+                    // Restore true-false translation fields
+                    if (data.trueFalseTranslationTrue || data.trueFalseTranslationFalse) {
+                        trueStatementTranslation.value = data.trueFalseTranslationTrue || '';
+                        falseStatementTranslation.value = data.trueFalseTranslationFalse || '';
                     }
                     
                     // Restore placeholder values using a direct approach
@@ -2463,11 +2473,12 @@
                     }
                     
                     // Replace [OPTION A], [OPTION B], etc. with user-filled option values
-                    // Map the correct placeholder values to option letters
-                    const optionA_value = completed.placeholderValues['CORRECT_OPTION'];
-                    const optionB_value = completed.placeholderValues['WRONG_OPTION_1'];
-                    const optionC_value = completed.placeholderValues['WRONG_OPTION_2'];
-                    const optionD_value = completed.placeholderValues['WRONG_OPTION_3'];
+                    // Map the correct placeholder values to option letters (safely)
+                    const placeholderValues = completed.placeholderValues || {};
+                    const optionA_value = placeholderValues['CORRECT_OPTION'];
+                    const optionB_value = placeholderValues['WRONG_OPTION_1'];
+                    const optionC_value = placeholderValues['WRONG_OPTION_2'];
+                    const optionD_value = placeholderValues['WRONG_OPTION_3'];
                     
                     if (optionA_value) {
                         trueStatement = trueStatement.replace(/\[OPTION A\]/g, optionA_value);
@@ -2568,7 +2579,20 @@
                     { elem: falseStatementTranslation, name: 'FALSE Statement Translation', id: 'false-statement-translation' }
                 ];
                 
+                // Debug: Check if true-false elements exist and have values
+                console.log('True statement element exists:', !!trueStatementTranslation);
+                console.log('False statement element exists:', !!falseStatementTranslation);
+                if (trueStatementTranslation) console.log('True statement value:', trueStatementTranslation.value);
+                if (falseStatementTranslation) console.log('False statement value:', falseStatementTranslation.value);
+                
                 translationFields.forEach(field => {
+                    if (!field.elem) {
+                        console.error(`Element not found for field: ${field.name}`);
+                        isValid = false;
+                        missingFields.push(field.name + ' (element not found)');
+                        return;
+                    }
+                    
                     const value = field.elem.value ? field.elem.value.trim() : '';
                     const isEmpty = !value;
                     if (isEmpty) {
