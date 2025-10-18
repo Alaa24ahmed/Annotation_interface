@@ -1072,7 +1072,7 @@
                 <ol class="directions-list">
                     <li><strong>Examine</strong> template format and example completed question.</li>
                     <li><strong>Fill placeholders</strong> with authentic content from your culture (in English). Use search engines to fact-check details.</li>
-                    <li><strong>Translate</strong> the complete question and options to your native language (and dialect if applicable).</li>
+                    <li><strong>Translate</strong> the complete question and the true-false variations to your native language (and dialect if applicable).</li>
                     <li><strong>Review</strong> for accuracy and authenticity, then submit.</li>
                 </ol>
             </div>
@@ -1540,7 +1540,7 @@
             
             // Check for template version changes and reset if needed
             function checkAndResetForNewTemplates() {
-                const CURRENT_TEMPLATE_VERSION = "v2.0"; // Update this when you upload new templates
+                const CURRENT_TEMPLATE_VERSION = "v3.0"; // Update this when you upload new templates
                 const storedVersion = localStorage.getItem('templateVersion');
                 
                 if (storedVersion !== CURRENT_TEMPLATE_VERSION) {
