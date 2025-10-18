@@ -1275,6 +1275,61 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // SECURITY CHECK: Block access without proper URL parameters
+            function validateAccess() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const pilotId = urlParams.get('id');
+                const subset = urlParams.get('subset');
+                
+                // Check if required parameters are present
+                const validPilotIds = ['742891', '586234', '193847'];
+                const hasValidId = pilotId && validPilotIds.includes(pilotId);
+                const hasSubset = subset && parseInt(subset) >= 1 && parseInt(subset) <= 10;
+                
+                if (!hasValidId || !hasSubset) {
+                    // Block access - show error message and prevent loading
+                    document.body.innerHTML = `
+                        <div style="
+                            display: flex; 
+                            align-items: center; 
+                            justify-content: center; 
+                            min-height: 100vh; 
+                            font-family: Arial, sans-serif;
+                            background-color: #f8faff;
+                            text-align: center;
+                        ">
+                            <div style="
+                                max-width: 500px;
+                                padding: 40px;
+                                background: white;
+                                border-radius: 12px;
+                                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                            ">
+                                <h2 style="color: #dc3545; margin-bottom: 20px;">
+                                    <i class="fas fa-lock" style="margin-right: 10px;"></i>
+                                    Access Denied
+                                </h2>
+                                <p style="color: #6c757d; margin-bottom: 20px; line-height: 1.6;">
+                                    This annotation interface requires valid authentication parameters. 
+                                    Please use the proper access link provided to you.
+                                </p>
+                                <p style="color: #495057; font-size: 14px;">
+                                    If you believe you should have access, please contact the research administrator.
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                    return false;
+                }
+                
+                return true;
+            }
+            
+            // Run security check first
+            if (!validateAccess()) {
+                return; // Stop execution if access is denied
+            }
+            
             // Global variables for user tracking
             let currentUserId = null;
             let deviceFingerprint = null;

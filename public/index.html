@@ -1019,12 +1019,92 @@
                 observer.observe(element);
             });
             
-            // Handle ID parameter passing
+            // Handle ID parameter passing and access control
             const urlParams = new URLSearchParams(window.location.search);
             const pilotId = urlParams.get('id');
             const subset = urlParams.get('subset');
             
-            if (pilotId && (pilotId === '742891' || pilotId === '586234' || pilotId === '193847')) {
+            // Block access to base URL without proper parameters
+            const validPilotIds = ['742891', '586234', '193847'];
+            const hasValidId = pilotId && validPilotIds.includes(pilotId);
+            const hasSubset = subset && parseInt(subset) >= 1 && parseInt(subset) <= 10;
+            
+            if (!hasValidId || !hasSubset) {
+                // Replace page content with access denied message
+                document.body.innerHTML = `
+                    <div style="
+                        display: flex; 
+                        align-items: center; 
+                        justify-content: center; 
+                        min-height: 100vh; 
+                        font-family: 'Outfit', Arial, sans-serif;
+                        background-color: #f8faff;
+                        background-image: radial-gradient(#e7ebff 1px, transparent 1px);
+                        background-size: 38px 38px;
+                        text-align: center;
+                    ">
+                        <div style="
+                            max-width: 600px;
+                            padding: 50px;
+                            background: white;
+                            border-radius: 16px;
+                            box-shadow: 0 8px 32px rgba(67, 97, 238, 0.15);
+                        ">
+                            <div style="margin-bottom: 30px;">
+                                <i class="fas fa-shield-alt" style="
+                                    font-size: 64px; 
+                                    color: #4361ee; 
+                                    margin-bottom: 20px;
+                                "></i>
+                            </div>
+                            <h1 style="
+                                color: #4361ee; 
+                                margin-bottom: 24px; 
+                                font-size: 32px;
+                                font-weight: 600;
+                            ">
+                                Restricted Access
+                            </h1>
+                            <p style="
+                                color: #6c757d; 
+                                margin-bottom: 30px; 
+                                line-height: 1.8;
+                                font-size: 18px;
+                            ">
+                                Access to the Multicultural Reasoning Benchmark annotation interface 
+                                is restricted to authorized research participants only.
+                            </p>
+                            <p style="
+                                color: #8d99ae; 
+                                font-size: 16px;
+                                line-height: 1.6;
+                            ">
+                                If you are a research participant, please use the specific access link 
+                                provided to you by the research team.
+                            </p>
+                            <div style="
+                                margin-top: 40px; 
+                                padding: 20px; 
+                                background-color: #f0f4ff; 
+                                border-radius: 8px;
+                                border-left: 4px solid #4361ee;
+                            ">
+                                <p style="
+                                    color: #4361ee; 
+                                    font-weight: 500;
+                                    margin: 0;
+                                    font-size: 14px;
+                                ">
+                                    For questions about access, please contact the research administrator.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                return; // Stop further execution
+            }
+            
+            if (pilotId && validPilotIds.includes(pilotId)) {
                 console.log('Pilot ID detected on homepage:', pilotId);
                 console.log('Subset parameter detected on homepage:', subset);
                 
