@@ -25,6 +25,10 @@ build/
 *.tmp
 *.temp
 
+# Backup files
+*_backup.html
+annotate_backup.html
+
 # IDE files
 .idea/
 *.swp
