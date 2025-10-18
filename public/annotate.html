@@ -875,7 +875,7 @@
             width: 100%;
             min-height: 100px;
             padding: 10px;
-            border: 2px solid var(--border-light);
+            border: 2px solid var(--border-color);
             border-radius: 4px;
             font-family: inherit;
             font-size: 0.95rem;
@@ -2290,14 +2290,16 @@
                 optionCTemplate.innerHTML = formatLineBreaks(template.option_c) || '<span class="placeholder" data-placeholder-id="WRONG_OPTION_2">[An incorrect option]</span>';
                 optionDTemplate.innerHTML = formatLineBreaks(template.option_d) || '<span class="placeholder" data-placeholder-id="WRONG_OPTION_3">[An incorrect option]</span>';
                 
-                // Initialize true-false questions with template placeholders (non-clickable)
+                // Initialize true-false questions with visible placeholders (non-clickable)
                 if (template.child_template_true && template.child_template_false) {
-                    // Create non-clickable placeholder display
+                    // Show template with placeholders visible but not clickable
                     trueStatementEnglish.textContent = template.child_template_true;
                     falseStatementEnglish.textContent = template.child_template_false;
                     trueStatementEnglish.classList.remove('filled');
                     falseStatementEnglish.classList.remove('filled');
-                    console.log('🔄 True-false questions initialized with template placeholders');
+                    console.log('🔄 True-false questions initialized with visible placeholders');
+                    console.log('🔄 TRUE template:', template.child_template_true);
+                    console.log('🔄 FALSE template:', template.child_template_false);
                 } else {
                     trueStatementEnglish.textContent = 'No TRUE template available for this question';
                     falseStatementEnglish.textContent = 'No FALSE template available for this question';
@@ -2552,64 +2554,59 @@
                 
                 try {
                     const completed = getCompletedQuestion();
-                    console.log('🔄 Completed question data:', completed);
-                    const hasFilledPlaceholders = completed.placeholderValues && Object.keys(completed.placeholderValues).length > 0;
-                    console.log('🔄 Has filled placeholders:', hasFilledPlaceholders);
-                    console.log('🔄 Placeholder values:', completed.placeholderValues);
                     
-                    if (hasFilledPlaceholders) {
-                        // Process TRUE statement
-                        let trueStatement = currentTemplate.child_template_true;
-                        let falseStatement = currentTemplate.child_template_false;
-                        
-                        // Replace user placeholders (like [FAMOUS PERSON])
+                    // Start with original templates
+                    let trueStatement = currentTemplate.child_template_true;
+                    let falseStatement = currentTemplate.child_template_false;
+                    let hasUpdates = false;
+                    
+                    // Replace user placeholders (like [FAMOUS PERSON]) if available
+                    if (completed.placeholderValues && Object.keys(completed.placeholderValues).length > 0) {
                         Object.entries(completed.placeholderValues).forEach(([placeholder, value]) => {
                             const regex = new RegExp(`\\[${placeholder}\\]`, 'g');
                             trueStatement = trueStatement.replace(regex, value);
                             falseStatement = falseStatement.replace(regex, value);
+                            hasUpdates = true;
                         });
-                        
-                        // Replace [OPTION A], [OPTION B], etc. with generated option content
-                        if (completed.optionA) {
-                            trueStatement = trueStatement.replace(/\[OPTION A\]/g, completed.optionA);
-                            falseStatement = falseStatement.replace(/\[OPTION A\]/g, completed.optionA);
-                        }
-                        if (completed.optionB) {
-                            trueStatement = trueStatement.replace(/\[OPTION B\]/g, completed.optionB);
-                            falseStatement = falseStatement.replace(/\[OPTION B\]/g, completed.optionB);
-                        }
-                        if (completed.optionC) {
-                            trueStatement = trueStatement.replace(/\[OPTION C\]/g, completed.optionC);
-                            falseStatement = falseStatement.replace(/\[OPTION C\]/g, completed.optionC);
-                        }
-                        if (completed.optionD) {
-                            trueStatement = trueStatement.replace(/\[OPTION D\]/g, completed.optionD);
-                            falseStatement = falseStatement.replace(/\[OPTION D\]/g, completed.optionD);
-                        }
-                        
-                        // Update the display divs
-                        trueStatementEnglish.textContent = trueStatement;
-                        falseStatementEnglish.textContent = falseStatement;
-                        
-                        // Add filled class to show content is populated
+                    }
+                    
+                    // Replace [OPTION A], [OPTION B], etc. with generated option content if available
+                    if (completed.optionA) {
+                        trueStatement = trueStatement.replace(/\[OPTION A\]/g, completed.optionA);
+                        falseStatement = falseStatement.replace(/\[OPTION A\]/g, completed.optionA);
+                        hasUpdates = true;
+                    }
+                    if (completed.optionB) {
+                        trueStatement = trueStatement.replace(/\[OPTION B\]/g, completed.optionB);
+                        falseStatement = falseStatement.replace(/\[OPTION B\]/g, completed.optionB);
+                        hasUpdates = true;
+                    }
+                    if (completed.optionC) {
+                        trueStatement = trueStatement.replace(/\[OPTION C\]/g, completed.optionC);
+                        falseStatement = falseStatement.replace(/\[OPTION C\]/g, completed.optionC);
+                        hasUpdates = true;
+                    }
+                    if (completed.optionD) {
+                        trueStatement = trueStatement.replace(/\[OPTION D\]/g, completed.optionD);
+                        falseStatement = falseStatement.replace(/\[OPTION D\]/g, completed.optionD);
+                        hasUpdates = true;
+                    }
+                    
+                    // Update the display divs
+                    trueStatementEnglish.textContent = trueStatement;
+                    falseStatementEnglish.textContent = falseStatement;
+                    
+                    // Add filled class if we have updates
+                    if (hasUpdates) {
                         trueStatementEnglish.classList.add('filled');
                         falseStatementEnglish.classList.add('filled');
-                        
-                        console.log('✅ True-false questions updated:', {
-                            trueStatement: trueStatement.substring(0, 50) + '...',
-                            falseStatement: falseStatement.substring(0, 50) + '...'
-                        });
+                        console.log('✅ True-false questions updated with replacements');
                     } else {
-                        // Clear if no placeholders filled
-                        trueStatementEnglish.textContent = 'Complete the template above to see the TRUE statement here';
-                        falseStatementEnglish.textContent = 'Complete the template above to see the FALSE statement here';
-                        
-                        // Remove filled class
                         trueStatementEnglish.classList.remove('filled');
                         falseStatementEnglish.classList.remove('filled');
-                        
-                        console.log('🔄 True-false questions cleared - no placeholders filled');
+                        console.log('🔄 True-false questions showing original templates with placeholders');
                     }
+                    
                 } catch (error) {
                     console.log('❌ Error updating true-false questions:', error);
                 }
