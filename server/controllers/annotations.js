@@ -24,6 +24,11 @@ exports.saveAnnotation = async (req, res) => {
         translated_option2,
         translated_option3,
         translated_option4,
+        // True-False questions and translations
+        true_question_english,
+        false_question_english,
+        true_question_translation,
+        false_question_translation,
         // Add new user tracking fields
         user_id,
         device_fingerprint,
@@ -70,7 +75,11 @@ exports.saveAnnotation = async (req, res) => {
         'translated_option1',
         'translated_option2',
         'translated_option3',
-        'translated_option4'
+        'translated_option4',
+        'true_question_english',
+        'false_question_english',
+        'true_question_translation',
+        'false_question_translation'
       ];
       
       for (const field of requiredFields) {
@@ -106,6 +115,11 @@ exports.saveAnnotation = async (req, res) => {
         translated_option2,
         translated_option3,
         translated_option4,
+        // True-False questions and translations
+        true_question_english,
+        false_question_english,
+        true_question_translation,
+        false_question_translation,
         // Add user tracking data
         user_id,
         device_fingerprint,

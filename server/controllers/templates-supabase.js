@@ -72,6 +72,9 @@ async function loadTemplatesFromSupabase() {
                 template_text: generateTemplateHTML(row.Template),
                 // Add note field from CSV
                 note: row["note"] || '', // Include note field, empty string if no note
+                // Add child template fields for true-false questions
+                child_template_true: row["Child Template (TRUE)"] || '',
+                child_template_false: row["Child Template (FALSE)"] || '',
                 // Wrap option templates in placeholder spans
                 option_a: generateOptionPlaceholder(row["Correct Option Template"] || 'The correct answer', 'CORRECT_OPTION'),
                 option_b: generateOptionPlaceholder(row["Wrong Options Template"] || 'An incorrect answer', 'WRONG_OPTION_1'),
@@ -193,6 +196,9 @@ function formatSingleTemplate(row) {
         template_text: generateTemplateHTML(row.Template),
         // Add note field from CSV
         note: row["note"] || '', // Include note field, empty string if no note
+        // Add child template fields for true-false questions
+        child_template_true: row["Child Template (TRUE)"] || '',
+        child_template_false: row["Child Template (FALSE)"] || '',
         // Wrap option templates in placeholder spans
         option_a: generateOptionPlaceholder(row["Correct Option Template"] || 'The correct answer', 'CORRECT_OPTION'),
         option_b: generateOptionPlaceholder(row["Wrong Options Template"] || 'An incorrect answer', 'WRONG_OPTION_1'),

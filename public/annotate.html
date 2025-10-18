@@ -321,6 +321,7 @@
           font-size: inherit;
           resize: vertical;
           transition: all 0.2s ease;
+          box-sizing: border-box;
         }
 
         textarea:focus {
@@ -829,10 +830,64 @@
             border-radius: 4px;
             padding: 8px;
             resize: vertical;
+            box-sizing: border-box;
         }
         
         .translation-option .correct-badge {
             margin-top: 8px;
+        }
+        
+        /* True-False Questions Section - Exact match to Question & Translation styling */
+        .true-false-section {
+            margin-bottom: 20px;
+        }
+        
+        .true-false-section h4 {
+            margin: 0 0 10px 0;
+            color: var(--text-dark);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+        
+        .statement-display {
+            background-color: var(--background-light);
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 3px solid var(--primary-color);
+            min-height: 50px;
+            font-style: italic;
+            color: var(--text-light);
+            line-height: 1.5;
+            display: flex;
+            align-items: center;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        
+        .statement-display.filled {
+            background-color: white;
+            color: var(--text-dark);
+            font-style: normal;
+            border-left: 3px solid var(--success-color);
+        }
+        
+        .true-false-section textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 10px;
+            border: 2px solid var(--border-light);
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            resize: vertical;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+        
+        .true-false-section textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(76, 201, 240, 0.2);
         }
         
         /* Responsive design for mobile */
@@ -1131,7 +1186,47 @@
                 </div>
             </div>
         </fieldset>
-        
+
+        <!-- True-False Questions & Translation -->
+        <fieldset>
+            <legend>True-False Questions & Translation</legend>
+            <div class="side-by-side-container">
+                <!-- English Column -->
+                <div class="english-column">
+                    <h3>English Version</h3>
+                    <div class="english-content">
+                        <div class="true-false-section">
+                            <h4>TRUE Statement:</h4>
+                            <div class="statement-display" id="true-statement-english">
+                                Complete the template above to see the TRUE statement here
+                            </div>
+                        </div>
+                        <div class="true-false-section">
+                            <h4>FALSE Statement:</h4>
+                            <div class="statement-display" id="false-statement-english">
+                                Complete the template above to see the FALSE statement here
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Translation Column -->
+                <div class="translation-column">
+                    <h3>Your Language Translation</h3>
+                    <div class="translation-content">
+                        <div class="true-false-section">
+                            <h4>TRUE Statement Translation:</h4>
+                            <textarea id="true-statement-translation" placeholder="Translate the TRUE statement..."></textarea>
+                        </div>
+                        <div class="true-false-section">
+                            <h4>FALSE Statement Translation:</h4>
+                            <textarea id="false-statement-translation" placeholder="Translate the FALSE statement..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+
         <div class="actions">
             <button id="submit-btn" disabled data-tooltip="Please complete all fields before submitting">Submit Annotation</button>
             <button id="reset-btn">Reset</button>
@@ -1171,6 +1266,12 @@
             const translationOptionB = document.getElementById('translation-option-b');
             const translationOptionC = document.getElementById('translation-option-c');
             const translationOptionD = document.getElementById('translation-option-d');
+            
+            // True-False Questions Elements
+            const trueStatementEnglish = document.getElementById('true-statement-english');
+            const falseStatementEnglish = document.getElementById('false-statement-english');
+            const trueStatementTranslation = document.getElementById('true-statement-translation');
+            const falseStatementTranslation = document.getElementById('false-statement-translation');
             
             const submitBtn = document.getElementById('submit-btn');
             const resetBtn = document.getElementById('reset-btn');
@@ -1995,6 +2096,7 @@
                     validateAnnotation();
                     updateEnglishColumn(); // Update the English column in real-time
                     updateTemplateSection(); // Update the template section in real-time
+                    updateTrueFalseQuestions(); // Update true-false questions in real-time
                     saveTemplateProgress();
                 });
                 
@@ -2159,6 +2261,9 @@
             // Load a template into the UI
             function loadTemplate(template) {
                 currentTemplate = template;
+                console.log('📋 Loading template:', template);
+                console.log('📋 Template child_template_true:', template.child_template_true);
+                console.log('📋 Template child_template_false:', template.child_template_false);
                 
                 // Function to convert \n to <br> for proper line breaks
                 function formatLineBreaks(text) {
@@ -2184,6 +2289,25 @@
                 optionBTemplate.innerHTML = formatLineBreaks(template.option_b) || '<span class="placeholder" data-placeholder-id="WRONG_OPTION_1">[An incorrect option]</span>';
                 optionCTemplate.innerHTML = formatLineBreaks(template.option_c) || '<span class="placeholder" data-placeholder-id="WRONG_OPTION_2">[An incorrect option]</span>';
                 optionDTemplate.innerHTML = formatLineBreaks(template.option_d) || '<span class="placeholder" data-placeholder-id="WRONG_OPTION_3">[An incorrect option]</span>';
+                
+                // Initialize true-false questions with template placeholders (non-clickable)
+                if (template.child_template_true && template.child_template_false) {
+                    // Create non-clickable placeholder display
+                    trueStatementEnglish.textContent = template.child_template_true;
+                    falseStatementEnglish.textContent = template.child_template_false;
+                    trueStatementEnglish.classList.remove('filled');
+                    falseStatementEnglish.classList.remove('filled');
+                    console.log('🔄 True-false questions initialized with template placeholders');
+                } else {
+                    trueStatementEnglish.textContent = 'No TRUE template available for this question';
+                    falseStatementEnglish.textContent = 'No FALSE template available for this question';
+                    trueStatementEnglish.classList.remove('filled');
+                    falseStatementEnglish.classList.remove('filled');
+                    console.log('🔄 No child templates available');
+                }
+                trueStatementTranslation.value = '';
+                falseStatementTranslation.value = '';
+                console.log('🔄 True-false questions initialized for new template');
                 
                 // Setup placeholder functionality for question and options (do this immediately after setting innerHTML)
                 initPlaceholders();
@@ -2403,6 +2527,94 @@
                 console.log('Template section update - simplified (no nested processing)');
             }
             
+            // Function to update true-false questions with real-time content
+            function updateTrueFalseQuestions() {
+                console.log('🔄 updateTrueFalseQuestions called');
+                console.log('🔄 currentTemplate:', currentTemplate);
+                
+                if (!currentTemplate) {
+                    console.log('❌ No currentTemplate available');
+                    return;
+                }
+                
+                console.log('🔄 Child template true:', currentTemplate.child_template_true);
+                console.log('🔄 Child template false:', currentTemplate.child_template_false);
+                
+                if (!currentTemplate.child_template_true || !currentTemplate.child_template_false) {
+                    console.log('🔄 No child templates available for true-false questions');
+                    // Show original template text if no child templates
+                    trueStatementEnglish.textContent = 'No TRUE template available for this question';
+                    falseStatementEnglish.textContent = 'No FALSE template available for this question';
+                    trueStatementEnglish.classList.remove('filled');
+                    falseStatementEnglish.classList.remove('filled');
+                    return;
+                }
+                
+                try {
+                    const completed = getCompletedQuestion();
+                    console.log('🔄 Completed question data:', completed);
+                    const hasFilledPlaceholders = completed.placeholderValues && Object.keys(completed.placeholderValues).length > 0;
+                    console.log('🔄 Has filled placeholders:', hasFilledPlaceholders);
+                    console.log('🔄 Placeholder values:', completed.placeholderValues);
+                    
+                    if (hasFilledPlaceholders) {
+                        // Process TRUE statement
+                        let trueStatement = currentTemplate.child_template_true;
+                        let falseStatement = currentTemplate.child_template_false;
+                        
+                        // Replace user placeholders (like [FAMOUS PERSON])
+                        Object.entries(completed.placeholderValues).forEach(([placeholder, value]) => {
+                            const regex = new RegExp(`\\[${placeholder}\\]`, 'g');
+                            trueStatement = trueStatement.replace(regex, value);
+                            falseStatement = falseStatement.replace(regex, value);
+                        });
+                        
+                        // Replace [OPTION A], [OPTION B], etc. with generated option content
+                        if (completed.optionA) {
+                            trueStatement = trueStatement.replace(/\[OPTION A\]/g, completed.optionA);
+                            falseStatement = falseStatement.replace(/\[OPTION A\]/g, completed.optionA);
+                        }
+                        if (completed.optionB) {
+                            trueStatement = trueStatement.replace(/\[OPTION B\]/g, completed.optionB);
+                            falseStatement = falseStatement.replace(/\[OPTION B\]/g, completed.optionB);
+                        }
+                        if (completed.optionC) {
+                            trueStatement = trueStatement.replace(/\[OPTION C\]/g, completed.optionC);
+                            falseStatement = falseStatement.replace(/\[OPTION C\]/g, completed.optionC);
+                        }
+                        if (completed.optionD) {
+                            trueStatement = trueStatement.replace(/\[OPTION D\]/g, completed.optionD);
+                            falseStatement = falseStatement.replace(/\[OPTION D\]/g, completed.optionD);
+                        }
+                        
+                        // Update the display divs
+                        trueStatementEnglish.textContent = trueStatement;
+                        falseStatementEnglish.textContent = falseStatement;
+                        
+                        // Add filled class to show content is populated
+                        trueStatementEnglish.classList.add('filled');
+                        falseStatementEnglish.classList.add('filled');
+                        
+                        console.log('✅ True-false questions updated:', {
+                            trueStatement: trueStatement.substring(0, 50) + '...',
+                            falseStatement: falseStatement.substring(0, 50) + '...'
+                        });
+                    } else {
+                        // Clear if no placeholders filled
+                        trueStatementEnglish.textContent = 'Complete the template above to see the TRUE statement here';
+                        falseStatementEnglish.textContent = 'Complete the template above to see the FALSE statement here';
+                        
+                        // Remove filled class
+                        trueStatementEnglish.classList.remove('filled');
+                        falseStatementEnglish.classList.remove('filled');
+                        
+                        console.log('🔄 True-false questions cleared - no placeholders filled');
+                    }
+                } catch (error) {
+                    console.log('❌ Error updating true-false questions:', error);
+                }
+            }
+            
             // Validation function to check if all fields are filled
             function validateAnnotation() {
                 console.log('🔍 VALIDATION START - Current time:', new Date().toISOString());
@@ -2415,6 +2627,7 @@
                 // Update the English column with real-time content
                 updateEnglishColumn();
                 updateTemplateSection();
+                updateTrueFalseQuestions(); // Update true-false questions
                 
                 console.log('📊 DOM State - Placeholders:', placeholders.length, 'Inputs:', inputs.length);
                 console.log('🎯 Submit button current state - Disabled:', submitBtn.disabled);
@@ -2466,7 +2679,9 @@
                     { elem: translationOptionA, name: 'Option A Translation', id: 'translation-option-a' },
                     { elem: translationOptionB, name: 'Option B Translation', id: 'translation-option-b' },
                     { elem: translationOptionC, name: 'Option C Translation', id: 'translation-option-c' },
-                    { elem: translationOptionD, name: 'Option D Translation', id: 'translation-option-d' }
+                    { elem: translationOptionD, name: 'Option D Translation', id: 'translation-option-d' },
+                    { elem: trueStatementTranslation, name: 'TRUE Statement Translation', id: 'true-statement-translation' },
+                    { elem: falseStatementTranslation, name: 'FALSE Statement Translation', id: 'false-statement-translation' }
                 ];
                 
                 console.log('📝 Checking translation fields:');
@@ -2700,6 +2915,12 @@
                     translated_option2: translationOptionB.value,
                     translated_option3: translationOptionC.value,
                     translated_option4: translationOptionD.value,
+                    
+                    // True-False questions and translations
+                    true_question_english: trueStatementEnglish.textContent,
+                    false_question_english: falseStatementEnglish.textContent,
+                    true_question_translation: trueStatementTranslation.value,
+                    false_question_translation: falseStatementTranslation.value,
                     
                     // Add user tracking data
                     user_id: currentUserId,
