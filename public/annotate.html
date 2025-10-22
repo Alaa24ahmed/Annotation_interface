@@ -1282,7 +1282,7 @@
                 const subset = urlParams.get('subset');
                 
                 // Check if required parameters are present
-                const validPilotIds = ['742891', '586234', '193847'];
+                const validPilotIds = ['742891', '586234', '193847', '415672'];
                 const hasValidId = pilotId && validPilotIds.includes(pilotId);
                 const hasSubset = subset && parseInt(subset) >= 1 && parseInt(subset) <= 10;
                 
@@ -1432,6 +1432,8 @@
                     return { language: 'Indonesian', country: 'Indonesia' };
                 } else if (userId === '193847') {
                     return { language: 'Egyptian Arabic', country: 'Egypt' };
+                } else if (userId === '415672') {
+                    return { language: 'Hindi', country: 'India' };
                 }
                 
                 return { language: null, country: null };
@@ -1444,14 +1446,14 @@
                 const pilotId = urlParams.get('id');
                 
                 
-                if (pilotId && (pilotId === '742891' || pilotId === '586234' || pilotId === '193847')) {
+                if (pilotId && (pilotId === '742891' || pilotId === '586234' || pilotId === '193847' || pilotId === '415672')) {
                     localStorage.setItem('pilotId', pilotId);
                     return pilotId;
                 }
                 
                 // Check if we have stored Pilot ID
                 const storedPilotId = localStorage.getItem('pilotId');
-                if (storedPilotId && (storedPilotId === '742891' || storedPilotId === '586234' || storedPilotId === '193847')) {
+                if (storedPilotId && (storedPilotId === '742891' || storedPilotId === '586234' || storedPilotId === '193847' || storedPilotId === '415672')) {
                     return storedPilotId;
                 }
                 
@@ -1682,6 +1684,7 @@
                         input.addEventListener('input', function() {
                             validateAnnotation();
                             updateProgressBasedOnCompleteness();
+                            updatePreview(); // Update preview in real-time if visible
                             saveTemplateProgress(); // Save progress when user types
                         });
                     });
@@ -2122,6 +2125,7 @@
                     updateEnglishColumn(); // Update the English column in real-time
                     updateTemplateSection(); // Update the template section in real-time
                     updateTrueFalseQuestions(); // Update true-false questions in real-time
+                    updatePreview(); // Update preview in real-time if visible
                     saveTemplateProgress();
                 });
                 
@@ -2753,6 +2757,102 @@
                 };
             }
             
+            // Update preview content with current values (real-time updates)
+            function updatePreview() {
+                if (previewDiv.style.display !== 'block') {
+                    return; // Don't update if preview is not visible
+                }
+                
+                // Get current completed values
+                const completed = getCompletedQuestion();
+                
+                // Get current translation values
+                const translatedQuestion = translationQuestion.value;
+                const translatedOptionA = translationOptionA.value;
+                const translatedOptionB = translationOptionB.value;
+                const translatedOptionC = translationOptionC.value;
+                const translatedOptionD = translationOptionD.value;
+                
+                // Update the preview content (keep the existing structure but update content)
+                const previewContent = previewDiv.querySelector('.preview-content');
+                if (previewContent) {
+                    previewContent.innerHTML = `
+                        <fieldset>
+                            <legend>Completed Question</legend>
+                            <p><strong>Question:</strong></p>
+                            <div class="preview-question">${completed.question.replace(/\n/g, '<br>')}</div>
+                            
+                            <p><strong>Options:</strong></p>
+                            <div class="options-container">
+                                <div class="option-item correct-option">
+                                    <div class="option-label">A.</div>
+                                    <div class="option-content">${completed.optionA}</div>
+                                    <div class="correct-marker">Correct Answer</div>
+                                </div>
+                                <div class="option-item">
+                                    <div class="option-label">B.</div>
+                                    <div class="option-content">${completed.optionB}</div>
+                                </div>
+                                <div class="option-item">
+                                    <div class="option-label">C.</div>
+                                    <div class="option-content">${completed.optionC}</div>
+                                </div>
+                                <div class="option-item">
+                                    <div class="option-label">D.</div>
+                                    <div class="option-content">${completed.optionD}</div>
+                                </div>
+                            </div>
+                        </fieldset>
+                        
+                        <fieldset>
+                            <legend>Translation</legend>
+                            <p><strong>Question:</strong></p>
+                            <div class="preview-question">${translatedQuestion.replace(/\n/g, '<br>')}</div>
+                            
+                            <p><strong>Options:</strong></p>
+                            <div class="options-container">
+                                <div class="option-item correct-option">
+                                    <div class="option-label">A.</div>
+                                    <div class="option-content">${translatedOptionA}</div>
+                                    <div class="correct-marker">Correct Answer</div>
+                                </div>
+                                <div class="option-item">
+                                    <div class="option-label">B.</div>
+                                    <div class="option-content">${translatedOptionB}</div>
+                                </div>
+                                <div class="option-item">
+                                    <div class="option-label">C.</div>
+                                    <div class="option-content">${translatedOptionC}</div>
+                                </div>
+                                <div class="option-item">
+                                    <div class="option-label">D.</div>
+                                    <div class="option-content">${translatedOptionD}</div>
+                                </div>
+                            </div>
+                        </fieldset>
+                        
+                        <fieldset>
+                            <legend>True-False Questions</legend>
+                            <div class="true-false-preview">
+                                <div class="true-false-item">
+                                    <p><strong>TRUE Statement (English):</strong></p>
+                                    <div class="statement-content">${trueStatementEnglish.textContent}</div>
+                                    <p><strong>TRUE Statement (Translation):</strong></p>
+                                    <div class="statement-content translation">${trueStatementTranslation.value}</div>
+                                </div>
+                                
+                                <div class="true-false-item">
+                                    <p><strong>FALSE Statement (English):</strong></p>
+                                    <div class="statement-content">${falseStatementEnglish.textContent}</div>
+                                    <p><strong>FALSE Statement (Translation):</strong></p>
+                                    <div class="statement-content translation">${falseStatementTranslation.value}</div>
+                                </div>
+                            </div>
+                        </fieldset>
+                    `;
+                }
+            }
+
             // Show preview before submission
             function showPreview() {
                 if (!validateAnnotation()) {
@@ -2857,12 +2957,51 @@
                 
                 previewDiv.style.display = 'block';
                 
-                // Add event listeners
+                // Add event listeners to buttons
                 document.getElementById('confirm-submit').addEventListener('click', submitAnnotation);
                 document.getElementById('cancel-preview').addEventListener('click', () => {
                     previewDiv.style.display = 'none';
                     updateProgressSteps(2); // Go back to step 2
                 });
+                
+                // Add real-time update listeners to all input fields
+                setupPreviewUpdateListeners();
+            }
+            
+            // Setup event listeners for real-time preview updates
+            function setupPreviewUpdateListeners() {
+                // Translation field listeners
+                const translationInputs = [
+                    translationQuestion, translationOptionA, 
+                    translationOptionB, translationOptionC, translationOptionD,
+                    trueStatementTranslation, falseStatementTranslation
+                ];
+                
+                translationInputs.forEach(input => {
+                    if (input) {
+                        // Remove existing preview listeners to avoid duplicates
+                        input.removeEventListener('input', updatePreview);
+                        // Add new listener
+                        input.addEventListener('input', updatePreview);
+                    }
+                });
+                
+                // Placeholder input listeners (dynamic inputs)
+                function addPlaceholderListeners() {
+                    const placeholderInputs = document.querySelectorAll('input[data-placeholder-id]');
+                    placeholderInputs.forEach(input => {
+                        // Remove existing preview listeners to avoid duplicates
+                        input.removeEventListener('input', updatePreview);
+                        // Add new listener
+                        input.addEventListener('input', updatePreview);
+                    });
+                }
+                
+                // Add listeners to existing placeholder inputs
+                addPlaceholderListeners();
+                
+                // Also add listeners when new placeholder inputs are created
+                // We'll need to modify the addPlaceholderEventListeners function for this
             }
             
             // Submit the annotation
