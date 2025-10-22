@@ -1439,7 +1439,7 @@
                 return { language: null, country: null };
             }
             
-            // Get user ID (Prolific-ready + Pilot test ready)
+            // Get user ID (Pilot test ready)
             function getUserId() {
                 // Check for Pilot ID first (for testing)
                 const urlParams = new URLSearchParams(window.location.search);
@@ -1455,20 +1455,6 @@
                 const storedPilotId = localStorage.getItem('pilotId');
                 if (storedPilotId && (storedPilotId === '742891' || storedPilotId === '586234' || storedPilotId === '193847' || storedPilotId === '415672')) {
                     return storedPilotId;
-                }
-                
-                // Check for Prolific ID second
-                const prolificPID = urlParams.get('PROLIFIC_PID');
-                
-                if (prolificPID) {
-                    localStorage.setItem('prolificPID', prolificPID);
-                    return prolificPID;
-                }
-                
-                // Check if we have stored Prolific ID
-                const storedProlificPID = localStorage.getItem('prolificPID');
-                if (storedProlificPID) {
-                    return storedProlificPID;
                 }
                 
                 // Fallback to development user ID
@@ -1605,7 +1591,6 @@
                     // Clear all progress-related localStorage but keep user identification
                     const keysToKeep = [
                         'pilotId',           // Keep pilot ID assignments
-                        'prolificPID',       // Keep Prolific user IDs
                         'devUserId'          // Keep development user IDs
                     ];
                     
@@ -3061,7 +3046,6 @@
                     // Add user tracking data
                     user_id: currentUserId,
                     device_fingerprint: deviceFingerprint,
-                    is_prolific_user: currentUserId.startsWith('6') || currentUserId.startsWith('5'),
                     
                     // Add demographics data
                     language: demographics.language,
@@ -3178,7 +3162,6 @@
                             original_template: currentTemplate.template,
                             user_id: currentUserId,
                             device_fingerprint: deviceFingerprint,
-                            is_prolific_user: currentUserId && (currentUserId.startsWith('6') || currentUserId.startsWith('5')),
                             skip_reason: reason,
                             
                             // Add demographics data

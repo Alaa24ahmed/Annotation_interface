@@ -1025,7 +1025,7 @@
             const subset = urlParams.get('subset');
             
             // Block access to base URL without proper parameters
-            const validPilotIds = ['742891', '586234', '193847'];
+            const validPilotIds = ['742891', '586234', '193847', '415672'];
             const hasValidId = pilotId && validPilotIds.includes(pilotId);
             const hasSubset = subset && parseInt(subset) >= 1 && parseInt(subset) <= 10;
             
@@ -1129,6 +1129,8 @@
                     demographics = 'Indonesian, Indonesia';
                 } else if (pilotId === '193847') {
                     demographics = 'Egyptian Arabic, Egypt';
+                } else if (pilotId === '415672') {
+                    demographics = 'Hindi, India';
                 }
                 console.log(`Pilot user ${pilotId} detected - Demographics: ${demographics}`);
                 if (subset) {
