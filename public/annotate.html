@@ -2374,59 +2374,71 @@
             function initPlaceholders() {
                 const placeholders = document.querySelectorAll('.placeholder');
                 
-                placeholders.forEach((placeholder, index) => {
+                // Group placeholders by their ID to handle duplicates properly
+                const placeholderGroups = {};
+                placeholders.forEach(placeholder => {
                     const placeholderId = placeholder.getAttribute('data-placeholder-id');
-                    const placeholderText = placeholder.textContent;
+                    if (!placeholderGroups[placeholderId]) {
+                        placeholderGroups[placeholderId] = [];
+                    }
+                    placeholderGroups[placeholderId].push(placeholder);
+                });
+                
+                // Process each group
+                Object.keys(placeholderGroups).forEach(placeholderId => {
+                    const group = placeholderGroups[placeholderId];
+                    if (group.length === 0) return;
                     
-                    placeholder.addEventListener('click', function() {
-                        
-                        // Find ALL placeholders with the same ID (for duplicate placeholders)
-                        const allSamePlaceholders = document.querySelectorAll(`.placeholder[data-placeholder-id="${placeholderId}"]`);
-                        
-                        // Check if there's already an input for this placeholder ID
-                        const existingInput = document.querySelector(`input[data-placeholder-id="${placeholderId}"]`);
-                        if (existingInput) {
-                            existingInput.focus();
-                            return;
-                        }
-                        
-                        // Create ONE input field that will be shared
-                        const input = document.createElement('input');
-                        input.type = 'text';
-                        input.value = '';
-                        input.setAttribute('data-placeholder-id', placeholderId);
-                        input.placeholder = placeholderText;
-                        
-                        // Add event listeners with sync functionality
-                        addPlaceholderEventListeners(input, placeholderId, placeholderText, allSamePlaceholders.length);
-                        
-                        // Replace the FIRST instance with input, hide/mark the others
-                        const firstPlaceholder = allSamePlaceholders[0];
-                        firstPlaceholder.parentNode.replaceChild(input, firstPlaceholder);
-                        
-                        // For additional instances, replace with a synced display span
-                        for (let i = 1; i < allSamePlaceholders.length; i++) {
-                            const syncSpan = document.createElement('span');
-                            syncSpan.className = 'synced-placeholder';
-                            syncSpan.setAttribute('data-placeholder-id', placeholderId);
-                            syncSpan.textContent = placeholderText; // Start with placeholder text
-                            syncSpan.style.border = '1px dashed #ccc';
-                            syncSpan.style.padding = '2px 5px';
-                            syncSpan.style.backgroundColor = '#f9f9f9';
-                            syncSpan.style.cursor = 'pointer';
-                            syncSpan.addEventListener('click', () => input.focus());
+                    const placeholderText = group[0].textContent;
+                    
+                    // Add click listener to all placeholders in this group
+                    group.forEach(placeholder => {
+                        placeholder.addEventListener('click', function() {
+                            // Check if there's already an input for this placeholder ID
+                            const existingInput = document.querySelector(`input[data-placeholder-id="${placeholderId}"]`);
+                            if (existingInput) {
+                                existingInput.focus();
+                                return;
+                            }
                             
-                            allSamePlaceholders[i].parentNode.replaceChild(syncSpan, allSamePlaceholders[i]);
-                        }
-                        
-                        // Focus on the new input
-                        input.focus();
-                        
-                        // Initial validation and save
-                        validateAnnotation();
-                        updateEnglishColumn(); // Update English column when placeholder becomes input
-                        updateTemplateSection(); // Update template section when placeholder becomes input
-                        saveTemplateProgress();
+                            // Create ONE input field that will be shared
+                            const input = document.createElement('input');
+                            input.type = 'text';
+                            input.value = '';
+                            input.setAttribute('data-placeholder-id', placeholderId);
+                            input.placeholder = placeholderText;
+                            
+                            // Add event listeners with sync functionality
+                            addPlaceholderEventListeners(input, placeholderId, placeholderText, group.length);
+                            
+                            // Replace the FIRST instance with input
+                            const firstPlaceholder = group[0];
+                            firstPlaceholder.parentNode.replaceChild(input, firstPlaceholder);
+                            
+                            // Convert ALL remaining instances to synced display spans
+                            for (let i = 1; i < group.length; i++) {
+                                const syncSpan = document.createElement('span');
+                                syncSpan.className = 'synced-placeholder';
+                                syncSpan.setAttribute('data-placeholder-id', placeholderId);
+                                syncSpan.textContent = placeholderText; // Start with placeholder text
+                                syncSpan.style.border = '1px dashed #ccc';
+                                syncSpan.style.padding = '2px 5px';
+                                syncSpan.style.backgroundColor = '#f9f9f9';
+                                syncSpan.style.cursor = 'pointer';
+                                syncSpan.addEventListener('click', () => input.focus());
+                                
+                                group[i].parentNode.replaceChild(syncSpan, group[i]);
+                            }
+                            
+                            // Focus on the new input
+                            input.focus();
+                            
+                            // Initial validation and save
+                            validateAnnotation();
+                            updateEnglishColumn(); // Update English column when placeholder becomes input
+                            updateTemplateSection(); // Update template section when placeholder becomes input
+                            saveTemplateProgress();
+                        });
                     });
                 });
             }
@@ -2511,10 +2523,29 @@
                 }
             }
             
-            // Function to update the template section in real-time - SIMPLIFIED
+            // Function to update the template section in real-time
             function updateTemplateSection() {
-                // No complex nested placeholder processing needed
-                // Template section will just show the original placeholder structure
+                // Update all synced placeholders in the template section to match their corresponding inputs
+                const inputs = document.querySelectorAll('input[data-placeholder-id]');
+                
+                inputs.forEach(input => {
+                    const placeholderId = input.getAttribute('data-placeholder-id');
+                    const value = input.value;
+                    
+                    // Find all synced placeholder spans with the same ID
+                    const syncedSpans = document.querySelectorAll(`.synced-placeholder[data-placeholder-id="${placeholderId}"]`);
+                    
+                    syncedSpans.forEach(span => {
+                        // Update the display text to match the input value or show placeholder text if empty
+                        if (value.trim()) {
+                            span.textContent = value;
+                            span.style.backgroundColor = '#e8f5e8'; // Light green to indicate filled
+                        } else {
+                            span.textContent = input.placeholder;
+                            span.style.backgroundColor = '#f9f9f9'; // Light gray for empty
+                        }
+                    });
+                });
             }
             
             // Function to update true-false questions with real-time content
