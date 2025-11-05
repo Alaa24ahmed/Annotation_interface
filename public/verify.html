@@ -309,14 +309,15 @@
     </div>
     
     <div id="verification-container" class="verification-container" style="display: none;">
-        <div class="template-context">
-            <h4>📋 Original English Template:</h4>
-            <p id="template-text"></p>
-            <div id="english-full-template" style="margin-top: 15px;"></div>
+        <div class="question-section">
+            <h3>English Question:</h3>
+            <div class="question-box">
+                <div id="english-full-template"></div>
+            </div>
         </div>
 
         <div class="question-section">
-            <h3>Translated Version:</h3>
+            <h3>Translated Question:</h3>
             <div class="question-box">
                 <div id="translated-full-template"></div>
             </div>
@@ -395,7 +396,6 @@
             const loadingDiv = document.getElementById('loading');
             const verificationContainer = document.getElementById('verification-container');
             const progressIndicator = document.getElementById('progress-indicator');
-            const templateText = document.getElementById('template-text');
             const englishFullTemplate = document.getElementById('english-full-template');
             const translatedFullTemplate = document.getElementById('translated-full-template');
             const optionsContainer = document.getElementById('options-container');
@@ -482,67 +482,61 @@
                 progressIndicator.textContent = `Verification ${currentAnnotationIndex + 1} of ${annotations.length}`;
                 progressIndicator.style.display = 'block';
                 
-                // Display original template structure from templates table
-                if (currentAnnotation.templates) {
-                    const template = currentAnnotation.templates;
-                    templateText.textContent = `Template #${template.No || template.id}`;
-                    
-                    englishFullTemplate.innerHTML = `
-                        <div class="full-template">
-                            <div class="template-option correct-option">
-                                <strong>Main Template:</strong><br>${template.Template || 'N/A'}
-                            </div>
-                            <div class="template-option">
-                                <strong>Correct Option Template:</strong><br>${template['Correct Option Template'] || 'N/A'}
-                            </div>
-                            <div class="template-option">
-                                <strong>Wrong Options Template:</strong><br>${template['Wrong Options Template'] || 'N/A'}
-                            </div>
+                // Prepare English options (Option 1 is always correct originally)
+                const englishOptions = [
+                    { text: currentAnnotation.generated_option1, isCorrect: true },
+                    { text: currentAnnotation.generated_option2, isCorrect: false },
+                    { text: currentAnnotation.generated_option3, isCorrect: false },
+                    { text: currentAnnotation.generated_option4, isCorrect: false }
+                ];
+                
+                // Shuffle English options
+                const shuffledEnglishOptions = shuffleArray(englishOptions);
+                
+                // Build English question with shuffled options
+                let englishOptionsHtml = '';
+                shuffledEnglishOptions.forEach((option, index) => {
+                    const label = String.fromCharCode(65 + index); // A, B, C, D
+                    englishOptionsHtml += `
+                        <div class="template-option">
+                            <span class="option-label-inline">${label}.</span> ${option.text}
                         </div>
                     `;
-                } else {
-                    templateText.textContent = currentAnnotation.original_template || 'Template not available';
-                    englishFullTemplate.innerHTML = '';
-                }
+                });
                 
-                // Build English question from annotations (WITHOUT indicating correct answer)
-                // Note: Don't show that option 1 is correct - let verifier decide
-                const englishOptionsHtml = `
-                    <div class="full-template" style="margin-top: 20px; border-top: 2px solid #dee2e6; padding-top: 20px;">
-                        <h4 style="margin-bottom: 15px;">📝 Generated English Question:</h4>
+                englishFullTemplate.innerHTML = `
+                    <div class="full-template">
                         <div class="template-question">${currentAnnotation.generated_question}</div>
-                        <div class="template-option">
-                            <span class="option-label-inline">A.</span> ${currentAnnotation.generated_option1}
-                        </div>
-                        <div class="template-option">
-                            <span class="option-label-inline">B.</span> ${currentAnnotation.generated_option2}
-                        </div>
-                        <div class="template-option">
-                            <span class="option-label-inline">C.</span> ${currentAnnotation.generated_option3}
-                        </div>
-                        <div class="template-option">
-                            <span class="option-label-inline">D.</span> ${currentAnnotation.generated_option4}
-                        </div>
+                        ${englishOptionsHtml}
                     </div>
                 `;
-                englishFullTemplate.innerHTML += englishOptionsHtml;
                 
-                // Build translated question from annotations (WITHOUT indicating correct answer)
+                // Prepare translated options
+                const translatedOptions = [
+                    { text: currentAnnotation.translated_option1 },
+                    { text: currentAnnotation.translated_option2 },
+                    { text: currentAnnotation.translated_option3 },
+                    { text: currentAnnotation.translated_option4 }
+                ];
+                
+                // Shuffle translated options
+                const shuffledTranslatedOptions = shuffleArray(translatedOptions);
+                
+                // Build translated question with shuffled options
+                let translatedOptionsHtml = '';
+                shuffledTranslatedOptions.forEach((option, index) => {
+                    const label = String.fromCharCode(65 + index); // A, B, C, D
+                    translatedOptionsHtml += `
+                        <div class="template-option">
+                            <span class="option-label-inline">${label}.</span> ${option.text}
+                        </div>
+                    `;
+                });
+                
                 translatedFullTemplate.innerHTML = `
                     <div class="full-template">
                         <div class="template-question">${currentAnnotation.translated_question}</div>
-                        <div class="template-option">
-                            <span class="option-label-inline">A.</span> ${currentAnnotation.translated_option1}
-                        </div>
-                        <div class="template-option">
-                            <span class="option-label-inline">B.</span> ${currentAnnotation.translated_option2}
-                        </div>
-                        <div class="template-option">
-                            <span class="option-label-inline">C.</span> ${currentAnnotation.translated_option3}
-                        </div>
-                        <div class="template-option">
-                            <span class="option-label-inline">D.</span> ${currentAnnotation.translated_option4}
-                        </div>
+                        ${translatedOptionsHtml}
                     </div>
                 `;
                 
