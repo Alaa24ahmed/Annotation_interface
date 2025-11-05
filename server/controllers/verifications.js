@@ -23,9 +23,24 @@ async function getAnnotationsForVerification(req, res) {
 
     // Query annotations from the specified subset and language
     // Only get annotations that have all required fields filled
+    // Join with templates table to get original template structure
     const { data, error } = await supabase
       .from('annotations')
-      .select('*')
+      .select(`
+        *,
+        templates (
+          id,
+          No,
+          Template,
+          "Correct Option Template",
+          "Wrong Options Template",
+          "Example Question",
+          "Option 1",
+          "Option 2",
+          "Option 3",
+          "Option 4"
+        )
+      `)
       .eq('subset_id', subsetId)
       .eq('language', language)
       .not('generated_question', 'is', null)

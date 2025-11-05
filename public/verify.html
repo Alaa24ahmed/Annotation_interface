@@ -159,8 +159,8 @@
         }
 
         .full-template .template-option.correct-option {
-            border-left-color: #28a745;
-            background-color: #d4edda;
+            border-left-color: #3498db;
+            background-color: #ebf5fb;
         }
 
         .full-template .option-label-inline {
@@ -482,15 +482,37 @@
                 progressIndicator.textContent = `Verification ${currentAnnotationIndex + 1} of ${annotations.length}`;
                 progressIndicator.style.display = 'block';
                 
-                // Display template context
-                templateText.textContent = currentAnnotation.original_template || 'Template not available';
+                // Display original template structure from templates table
+                if (currentAnnotation.templates) {
+                    const template = currentAnnotation.templates;
+                    templateText.textContent = `Template #${template.No || template.id}`;
+                    
+                    englishFullTemplate.innerHTML = `
+                        <div class="full-template">
+                            <div class="template-option correct-option">
+                                <strong>Main Template:</strong><br>${template.Template || 'N/A'}
+                            </div>
+                            <div class="template-option">
+                                <strong>Correct Option Template:</strong><br>${template['Correct Option Template'] || 'N/A'}
+                            </div>
+                            <div class="template-option">
+                                <strong>Wrong Options Template:</strong><br>${template['Wrong Options Template'] || 'N/A'}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    templateText.textContent = currentAnnotation.original_template || 'Template not available';
+                    englishFullTemplate.innerHTML = '';
+                }
                 
-                // Build English full template with question and all options
-                englishFullTemplate.innerHTML = `
-                    <div class="full-template">
+                // Build English question from annotations (WITHOUT indicating correct answer)
+                // Note: Don't show that option 1 is correct - let verifier decide
+                const englishOptionsHtml = `
+                    <div class="full-template" style="margin-top: 20px; border-top: 2px solid #dee2e6; padding-top: 20px;">
+                        <h4 style="margin-bottom: 15px;">📝 Generated English Question:</h4>
                         <div class="template-question">${currentAnnotation.generated_question}</div>
-                        <div class="template-option correct-option">
-                            <span class="option-label-inline">A.</span> ${currentAnnotation.generated_option1} ✓
+                        <div class="template-option">
+                            <span class="option-label-inline">A.</span> ${currentAnnotation.generated_option1}
                         </div>
                         <div class="template-option">
                             <span class="option-label-inline">B.</span> ${currentAnnotation.generated_option2}
@@ -503,8 +525,9 @@
                         </div>
                     </div>
                 `;
+                englishFullTemplate.innerHTML += englishOptionsHtml;
                 
-                // Build translated full template with question and all options
+                // Build translated question from annotations (WITHOUT indicating correct answer)
                 translatedFullTemplate.innerHTML = `
                     <div class="full-template">
                         <div class="template-question">${currentAnnotation.translated_question}</div>
