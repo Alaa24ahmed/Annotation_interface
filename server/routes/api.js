@@ -4,6 +4,7 @@ const express = require('express');
 const router = express.Router();
 const annotationController = require('../controllers/annotations');
 const templateController = require('../controllers/templates-supabase');
+const verificationController = require('../controllers/verifications');
 
 // Annotation routes
 router.post('/annotations', annotationController.saveAnnotation);
@@ -17,5 +18,11 @@ if (typeof annotationController.getAnnotations === 'function') {
 // Template routes
 router.get('/templates/random', templateController.getRandomTemplate);
 router.get('/templates/subset', templateController.getTemplatesBySubset);
+
+// Verification routes
+router.get('/verifications/annotations', verificationController.getAnnotationsForVerification);
+router.get('/verifications/completed', verificationController.getCompletedVerifications);
+router.post('/verifications', verificationController.saveVerification);
+router.get('/verifications/stats', verificationController.getVerificationStats);
 
 module.exports = router;

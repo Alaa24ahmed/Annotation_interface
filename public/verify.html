@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multicultural Reasoning Benchmark - Verification Tool</title>
+    
+    <style>
+        :root {
+          --primary-color: #4361ee;
+          --primary-light: #4895ef;
+          --primary-dark: #3f37c9;
+          --accent-color: #f72585;
+          --success-color: #4cc9f0;
+          --warning-color: #f8961e;
+          --error-color: #e63946;
+          --text-dark: #2b2d42;
+          --text-light: #8d99ae;
+          --background-light: #f8f9fa;
+          --background-card: #ffffff;
+          --border-color: #e5e7eb;
+        }
+
+        body {
+          font-family: 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, Oxygen, Ubuntu, sans-serif;
+          line-height: 1.7;
+          max-width: 1300px;
+          margin: 0 auto;
+          padding: 20px;
+          color: var(--text-dark);
+          background-color: var(--background-light);
+        }
+
+        h1 {
+          font-size: 1.8rem;
+          margin-bottom: 1.5rem;
+          text-align: center;
+          color: var(--primary-dark);
+          font-weight: 600;
+        }
+
+        h2 {
+          font-size: 1.4rem;
+          margin-top: 2rem;
+          border-bottom: 2px solid var(--primary-light);
+          padding-bottom: 0.5rem;
+          color: var(--primary-dark);
+        }
+
+        h3 {
+          font-size: 1.1rem;
+          margin-bottom: 0.8rem;
+          color: var(--primary-color);
+        }
+
+        .progress-indicator {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(67, 97, 238, 0.2);
+        }
+
+        .loading {
+          text-align: center;
+          padding: 40px 20px;
+          font-style: italic;
+          color: var(--text-light);
+          background-color: var(--background-card);
+          border-radius: 10px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+          animation: pulse 1.5s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.7; }
+        }
+
+        .verification-container {
+          margin-bottom: 30px;
+          padding: 25px;
+          border-radius: 10px;
+          background-color: var(--background-card);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .template-context {
+            background-color: #f0f8ff;
+            border-left: 4px solid var(--primary-color);
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 6px;
+        }
+
+        .template-context h4 {
+            margin: 0 0 10px 0;
+            color: var(--primary-dark);
+            font-size: 0.95rem;
+        }
+
+        .template-context p {
+            margin: 0;
+            font-style: italic;
+            color: var(--text-dark);
+        }
+
+        .question-section {
+            margin-bottom: 30px;
+        }
+
+        .question-box {
+            background-color: white;
+            border: 2px solid var(--primary-light);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--text-dark);
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .translation-text {
+            font-size: 1rem;
+            color: var(--text-light);
+            line-height: 1.6;
+            padding: 15px;
+            background-color: #f9fafb;
+            border-radius: 6px;
+            border-left: 3px solid var(--success-color);
+        }
+
+        .options-container {
+            margin-top: 20px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 12px;
+            background-color: white;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .option-item:hover {
+            border-color: var(--primary-light);
+            background-color: #f0f8ff;
+            transform: translateX(5px);
+        }
+
+        .option-item.selected {
+            border-color: var(--primary-color);
+            background-color: rgba(67, 97, 238, 0.1);
+            box-shadow: 0 2px 8px rgba(67, 97, 238, 0.2);
+        }
+
+        .option-label {
+            font-weight: 600;
+            color: var(--primary-color);
+            min-width: 40px;
+            font-size: 1.1rem;
+        }
+
+        .option-text {
+            flex: 1;
+            color: var(--text-dark);
+            font-size: 1rem;
+        }
+
+        .actions {
+          display: flex;
+          gap: 15px;
+          margin-top: 25px;
+          justify-content: center;
+        }
+
+        button {
+          padding: 12px 30px;
+          background-color: var(--primary-color);
+          color: white;
+          border: none;
+          border-radius: 6px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          font-weight: 500;
+          font-size: 1rem;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        button:hover {
+          background-color: var(--primary-dark);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        button:disabled {
+          background-color: var(--text-light);
+          cursor: not-allowed;
+          transform: none;
+          box-shadow: none;
+          opacity: 0.6;
+        }
+
+        .status {
+          margin-top: 20px;
+          padding: 15px;
+          border-radius: 6px;
+          display: none;
+          font-weight: 500;
+          animation: fadeIn 0.3s ease;
+        }
+
+        .status.success {
+          display: block;
+          background-color: rgba(76, 201, 240, 0.15);
+          color: #0077b6;
+          border-left: 4px solid #0077b6;
+        }
+
+        .status.error {
+          display: block;
+          background-color: rgba(230, 57, 70, 0.15);
+          color: #d62828;
+          border-left: 4px solid #d62828;
+        }
+
+        .completion-message {
+            text-align: center;
+            padding: 40px;
+            background-color: var(--background-card);
+            border-radius: 15px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            margin: 20px auto;
+            max-width: 600px;
+        }
+
+        .completion-message h2 {
+            color: var(--success-color);
+            margin-bottom: 20px;
+            font-size: 2.2rem;
+            border: none;
+        }
+
+        .completion-message p {
+            color: var(--text-dark);
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <h1>Multicultural Reasoning Benchmark - Verification Tool</h1>
+    
+    <div id="progress-indicator" class="progress-indicator" style="display: none;">
+        Loading...
+    </div>
+    
+    <div id="loading" class="loading">
+        Loading annotations for verification...
+    </div>
+    
+    <div id="verification-container" class="verification-container" style="display: none;">
+        <div class="template-context">
+            <h4>📋 Original Template:</h4>
+            <p id="template-text"></p>
+        </div>
+
+        <div class="question-section">
+            <h3>English Question:</h3>
+            <div class="question-box">
+                <div class="question-text" id="english-question"></div>
+            </div>
+
+            <h3>Translated Question:</h3>
+            <div class="question-box">
+                <div class="translation-text" id="translated-question"></div>
+            </div>
+        </div>
+
+        <h3>Select the Correct Answer:</h3>
+        <div class="options-container" id="options-container">
+            <!-- Options will be inserted here dynamically -->
+        </div>
+
+        <div class="actions">
+            <button id="submit-btn" disabled>Submit Answer</button>
+        </div>
+        
+        <div id="status" class="status"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Security check: Validate access
+            function validateAccess() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const verifierId = urlParams.get('id');
+                const subset = urlParams.get('subset');
+                
+                const validPilotIds = ['742891', '586234', '193847', '415672', '829456', '651327'];
+                const hasValidId = verifierId && validPilotIds.includes(verifierId);
+                const hasSubset = subset && parseInt(subset) >= 1 && parseInt(subset) <= 10;
+                
+                if (!hasValidId || !hasSubset) {
+                    document.body.innerHTML = `
+                        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; text-align: center;">
+                            <div style="max-width: 500px; padding: 40px; background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                <h2 style="color: #dc3545; margin-bottom: 20px;">Access Denied</h2>
+                                <p style="color: #6c757d; margin-bottom: 20px;">This verification interface requires valid authentication parameters.</p>
+                                <p style="color: #495057; font-size: 14px;">Please use the proper access link provided to you.</p>
+                            </div>
+                        </div>
+                    `;
+                    return false;
+                }
+                
+                return true;
+            }
+            
+            if (!validateAccess()) {
+                return;
+            }
+
+            // Get user demographics
+            function getUserDemographics(userId) {
+                const demographics = {
+                    '742891': { language: 'Chinese', country: 'China' },
+                    '586234': { language: 'Indonesian', country: 'Indonesia' },
+                    '193847': { language: 'Egyptian Arabic', country: 'Egypt' },
+                    '415672': { language: 'Hindi', country: 'India' },
+                    '829456': { language: 'Tagalog', country: 'Philippines' },
+                    '651327': { language: 'Kazakh', country: 'Kazakhstan' }
+                };
+                return demographics[userId] || { language: null, country: null };
+            }
+
+            // Global variables
+            const urlParams = new URLSearchParams(window.location.search);
+            const verifierId = urlParams.get('id');
+            const subsetId = parseInt(urlParams.get('subset'));
+            const demographics = getUserDemographics(verifierId);
+            
+            let annotations = [];
+            let currentAnnotationIndex = 0;
+            let currentAnnotation = null;
+            let shuffledOptions = [];
+            let selectedOption = null;
+            let questionStartTime = null;
+
+            const loadingDiv = document.getElementById('loading');
+            const verificationContainer = document.getElementById('verification-container');
+            const progressIndicator = document.getElementById('progress-indicator');
+            const templateText = document.getElementById('template-text');
+            const englishQuestion = document.getElementById('english-question');
+            const translatedQuestion = document.getElementById('translated-question');
+            const optionsContainer = document.getElementById('options-container');
+            const submitBtn = document.getElementById('submit-btn');
+            const statusDiv = document.getElementById('status');
+
+            // Fetch annotations for verification
+            async function fetchAnnotations() {
+                try {
+                    const response = await fetch(`/api/verifications/annotations?subset=${subsetId}&language=${encodeURIComponent(demographics.language)}`);
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch annotations');
+                    }
+                    
+                    const data = await response.json();
+                    annotations = data.annotations || [];
+                    
+                    console.log(`Loaded ${annotations.length} annotations for verification`);
+                    
+                    if (annotations.length === 0) {
+                        showCompletionMessage('No annotations available for verification in this subset.');
+                        return;
+                    }
+                    
+                    // Filter out already verified annotations
+                    await filterVerifiedAnnotations();
+                    
+                    if (annotations.length === 0) {
+                        showCompletionMessage('All annotations in this subset have been verified!');
+                        return;
+                    }
+                    
+                    loadCurrentAnnotation();
+                    
+                } catch (error) {
+                    console.error('Error fetching annotations:', error);
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = 'Error loading annotations: ' + error.message;
+                    statusDiv.style.display = 'block';
+                }
+            }
+
+            // Filter out already verified annotations
+            async function filterVerifiedAnnotations() {
+                try {
+                    const response = await fetch(`/api/verifications/completed?verifier_id=${verifierId}&subset=${subsetId}`);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        const verifiedAnnotationIds = data.verified_annotation_ids || [];
+                        
+                        // Remove already verified annotations
+                        annotations = annotations.filter(ann => !verifiedAnnotationIds.includes(ann.id));
+                        
+                        console.log(`${verifiedAnnotationIds.length} annotations already verified, ${annotations.length} remaining`);
+                    }
+                } catch (error) {
+                    console.error('Error checking verified annotations:', error);
+                }
+            }
+
+            // Shuffle array
+            function shuffleArray(array) {
+                const shuffled = [...array];
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+                return shuffled;
+            }
+
+            // Load current annotation
+            function loadCurrentAnnotation() {
+                if (currentAnnotationIndex >= annotations.length) {
+                    showCompletionMessage('All annotations verified! Great work!');
+                    return;
+                }
+
+                currentAnnotation = annotations[currentAnnotationIndex];
+                questionStartTime = Date.now();
+                
+                // Update progress
+                progressIndicator.textContent = `Verification ${currentAnnotationIndex + 1} of ${annotations.length}`;
+                progressIndicator.style.display = 'block';
+                
+                // Display template context
+                templateText.textContent = currentAnnotation.original_template || 'Template not available';
+                
+                // Display questions
+                englishQuestion.textContent = currentAnnotation.generated_question;
+                translatedQuestion.textContent = currentAnnotation.translated_question;
+                
+                // Prepare options (Option 1 is always correct originally)
+                const options = [
+                    { text: currentAnnotation.generated_option1, originalPosition: 'A', isCorrect: true },
+                    { text: currentAnnotation.generated_option2, originalPosition: 'B', isCorrect: false },
+                    { text: currentAnnotation.generated_option3, originalPosition: 'C', isCorrect: false },
+                    { text: currentAnnotation.generated_option4, originalPosition: 'D', isCorrect: false }
+                ];
+                
+                // Shuffle options
+                shuffledOptions = shuffleArray(options);
+                
+                // Display options
+                optionsContainer.innerHTML = '';
+                shuffledOptions.forEach((option, index) => {
+                    const label = String.fromCharCode(65 + index); // A, B, C, D
+                    
+                    const optionDiv = document.createElement('div');
+                    optionDiv.className = 'option-item';
+                    optionDiv.dataset.position = label;
+                    optionDiv.dataset.isCorrect = option.isCorrect;
+                    
+                    optionDiv.innerHTML = `
+                        <div class="option-label">${label}.</div>
+                        <div class="option-text">${option.text}</div>
+                    `;
+                    
+                    optionDiv.addEventListener('click', function() {
+                        selectOption(this);
+                    });
+                    
+                    optionsContainer.appendChild(optionDiv);
+                });
+                
+                // Reset selection
+                selectedOption = null;
+                submitBtn.disabled = true;
+                
+                // Show container
+                loadingDiv.style.display = 'none';
+                verificationContainer.style.display = 'block';
+                statusDiv.style.display = 'none';
+            }
+
+            // Select option
+            function selectOption(optionElement) {
+                // Remove previous selection
+                document.querySelectorAll('.option-item').forEach(item => {
+                    item.classList.remove('selected');
+                });
+                
+                // Add selection to clicked option
+                optionElement.classList.add('selected');
+                
+                // Store selection
+                selectedOption = {
+                    position: optionElement.dataset.position,
+                    isCorrect: optionElement.dataset.isCorrect === 'true'
+                };
+                
+                // Enable submit button
+                submitBtn.disabled = false;
+            }
+
+            // Submit verification
+            async function submitVerification() {
+                if (!selectedOption) return;
+                
+                // Calculate time spent
+                const timeSpent = Math.round((Date.now() - questionStartTime) / 1000);
+                
+                // Find where the correct answer ended up after shuffling
+                const correctOption = shuffledOptions.find(opt => opt.isCorrect);
+                const shuffledCorrectPosition = String.fromCharCode(65 + shuffledOptions.indexOf(correctOption));
+                
+                // Prepare verification data
+                const verificationData = {
+                    annotation_id: currentAnnotation.id,
+                    template_id: currentAnnotation.template_id,
+                    verifier_user_id: verifierId,
+                    selected_option: selectedOption.position,
+                    is_correct: selectedOption.isCorrect,
+                    original_correct_position: 'A',
+                    shuffled_correct_position: shuffledCorrectPosition,
+                    subset_id: subsetId,
+                    language: demographics.language,
+                    country: demographics.country,
+                    time_spent_seconds: timeSpent
+                };
+                
+                try {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Submitting...';
+                    
+                    const response = await fetch('/api/verifications', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(verificationData)
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to submit verification');
+                    }
+                    
+                    statusDiv.className = 'status success';
+                    statusDiv.textContent = 'Verification submitted successfully!';
+                    statusDiv.style.display = 'block';
+                    
+                    // Move to next annotation after delay
+                    setTimeout(() => {
+                        currentAnnotationIndex++;
+                        submitBtn.textContent = 'Submit Answer';
+                        loadCurrentAnnotation();
+                    }, 1500);
+                    
+                } catch (error) {
+                    console.error('Error submitting verification:', error);
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = 'Error submitting verification: ' + error.message;
+                    statusDiv.style.display = 'block';
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Submit Answer';
+                }
+            }
+
+            // Show completion message
+            function showCompletionMessage(message) {
+                loadingDiv.style.display = 'none';
+                verificationContainer.style.display = 'none';
+                progressIndicator.style.display = 'none';
+                
+                document.body.innerHTML += `
+                    <div class="completion-message">
+                        <h2>🎉 ${message}</h2>
+                        <p>Thank you for your contribution to quality control!</p>
+                    </div>
+                `;
+            }
+
+            // Event listeners
+            submitBtn.addEventListener('click', submitVerification);
+
+            // Initialize
+            fetchAnnotations();
+        });
+    </script>
+</body>
+</html>

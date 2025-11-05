@@ -90,6 +90,11 @@ app.get('/annotate', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/annotate.html'));
 });
 
+// Verification tool route
+app.get('/verify', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/verify.html'));
+});
+
 // Error handling
 app.use((err, req, res, next) => {
   console.error(err.stack);
