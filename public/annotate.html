@@ -1282,7 +1282,7 @@
                 const subset = urlParams.get('subset');
                 
                 // Check if required parameters are present
-                const validPilotIds = ['742891', '586234', '193847', '415672', '829456'];
+                const validPilotIds = ['742891', '586234', '193847', '415672', '829456', '651327'];
                 const hasValidId = pilotId && validPilotIds.includes(pilotId);
                 const hasSubset = subset && parseInt(subset) >= 1 && parseInt(subset) <= 10;
                 
@@ -1436,6 +1436,8 @@
                     return { language: 'Hindi', country: 'India' };
                 } else if (userId === '829456') {
                     return { language: 'Tagalog', country: 'Philippines' };
+                } else if (userId === '651327') {
+                    return { language: 'Kazakh', country: 'Kazakhstan' };
                 }
                 
                 return { language: null, country: null };
@@ -1448,14 +1450,14 @@
                 const pilotId = urlParams.get('id');
                 
                 
-                if (pilotId && (pilotId === '742891' || pilotId === '586234' || pilotId === '193847' || pilotId === '415672' || pilotId === '829456')) {
+                if (pilotId && (pilotId === '742891' || pilotId === '586234' || pilotId === '193847' || pilotId === '415672' || pilotId === '829456' || pilotId === '651327')) {
                     localStorage.setItem('pilotId', pilotId);
                     return pilotId;
                 }
                 
                 // Check if we have stored Pilot ID
                 const storedPilotId = localStorage.getItem('pilotId');
-                if (storedPilotId && (storedPilotId === '742891' || storedPilotId === '586234' || storedPilotId === '193847' || storedPilotId === '415672' || storedPilotId === '829456')) {
+                if (storedPilotId && (storedPilotId === '742891' || storedPilotId === '586234' || storedPilotId === '193847' || storedPilotId === '415672' || storedPilotId === '829456' || storedPilotId === '651327')) {
                     return storedPilotId;
                 }
                 
