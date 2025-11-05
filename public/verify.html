@@ -138,6 +138,37 @@
             border-left: 3px solid var(--success-color);
         }
 
+        .full-template {
+            font-size: 1rem;
+            line-height: 1.8;
+            color: var(--text-dark);
+        }
+
+        .full-template .template-question {
+            font-weight: 500;
+            margin-bottom: 15px;
+            font-size: 1.05rem;
+        }
+
+        .full-template .template-option {
+            padding: 10px 15px;
+            margin: 8px 0;
+            background-color: #f8f9fa;
+            border-left: 3px solid #dee2e6;
+            border-radius: 4px;
+        }
+
+        .full-template .template-option.correct-option {
+            border-left-color: #28a745;
+            background-color: #d4edda;
+        }
+
+        .full-template .option-label-inline {
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-right: 8px;
+        }
+
         .options-container {
             margin-top: 20px;
         }
@@ -279,19 +310,15 @@
     
     <div id="verification-container" class="verification-container" style="display: none;">
         <div class="template-context">
-            <h4>📋 Original Template:</h4>
+            <h4>📋 Original English Template:</h4>
             <p id="template-text"></p>
+            <div id="english-full-template" style="margin-top: 15px;"></div>
         </div>
 
         <div class="question-section">
-            <h3>English Question:</h3>
+            <h3>Translated Version:</h3>
             <div class="question-box">
-                <div class="question-text" id="english-question"></div>
-            </div>
-
-            <h3>Translated Question:</h3>
-            <div class="question-box">
-                <div class="translation-text" id="translated-question"></div>
+                <div id="translated-full-template"></div>
             </div>
         </div>
 
@@ -369,8 +396,8 @@
             const verificationContainer = document.getElementById('verification-container');
             const progressIndicator = document.getElementById('progress-indicator');
             const templateText = document.getElementById('template-text');
-            const englishQuestion = document.getElementById('english-question');
-            const translatedQuestion = document.getElementById('translated-question');
+            const englishFullTemplate = document.getElementById('english-full-template');
+            const translatedFullTemplate = document.getElementById('translated-full-template');
             const optionsContainer = document.getElementById('options-container');
             const submitBtn = document.getElementById('submit-btn');
             const statusDiv = document.getElementById('status');
@@ -458,9 +485,43 @@
                 // Display template context
                 templateText.textContent = currentAnnotation.original_template || 'Template not available';
                 
-                // Display questions
-                englishQuestion.textContent = currentAnnotation.generated_question;
-                translatedQuestion.textContent = currentAnnotation.translated_question;
+                // Build English full template with question and all options
+                englishFullTemplate.innerHTML = `
+                    <div class="full-template">
+                        <div class="template-question">${currentAnnotation.generated_question}</div>
+                        <div class="template-option correct-option">
+                            <span class="option-label-inline">A.</span> ${currentAnnotation.generated_option1} ✓
+                        </div>
+                        <div class="template-option">
+                            <span class="option-label-inline">B.</span> ${currentAnnotation.generated_option2}
+                        </div>
+                        <div class="template-option">
+                            <span class="option-label-inline">C.</span> ${currentAnnotation.generated_option3}
+                        </div>
+                        <div class="template-option">
+                            <span class="option-label-inline">D.</span> ${currentAnnotation.generated_option4}
+                        </div>
+                    </div>
+                `;
+                
+                // Build translated full template with question and all options
+                translatedFullTemplate.innerHTML = `
+                    <div class="full-template">
+                        <div class="template-question">${currentAnnotation.translated_question}</div>
+                        <div class="template-option">
+                            <span class="option-label-inline">A.</span> ${currentAnnotation.translated_option1}
+                        </div>
+                        <div class="template-option">
+                            <span class="option-label-inline">B.</span> ${currentAnnotation.translated_option2}
+                        </div>
+                        <div class="template-option">
+                            <span class="option-label-inline">C.</span> ${currentAnnotation.translated_option3}
+                        </div>
+                        <div class="template-option">
+                            <span class="option-label-inline">D.</span> ${currentAnnotation.translated_option4}
+                        </div>
+                    </div>
+                `;
                 
                 // Prepare options (Option 1 is always correct originally)
                 const options = [
