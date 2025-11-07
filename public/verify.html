@@ -310,22 +310,14 @@
     
     <div id="verification-container" class="verification-container" style="display: none;">
         <div class="question-section">
-            <h3>English Question:</h3>
             <div class="question-box">
-                <div id="english-full-template"></div>
-            </div>
-        </div>
-
-        <div class="question-section">
-            <h3>Translated Question:</h3>
-            <div class="question-box">
-                <div id="translated-full-template"></div>
+                <div id="translated-question-display"></div>
             </div>
         </div>
 
         <h3>Select the Correct Answer:</h3>
         <div class="options-container" id="options-container">
-            <!-- Options will be inserted here dynamically -->
+            <!-- Shuffled translated options will be inserted here dynamically -->
         </div>
 
         <div class="actions">
@@ -396,8 +388,7 @@
             const loadingDiv = document.getElementById('loading');
             const verificationContainer = document.getElementById('verification-container');
             const progressIndicator = document.getElementById('progress-indicator');
-            const englishFullTemplate = document.getElementById('english-full-template');
-            const translatedFullTemplate = document.getElementById('translated-full-template');
+            const translatedQuestionDisplay = document.getElementById('translated-question-display');
             const optionsContainer = document.getElementById('options-container');
             const submitBtn = document.getElementById('submit-btn');
             const statusDiv = document.getElementById('status');
@@ -479,79 +470,28 @@
                 questionStartTime = Date.now();
                 
                 // Update progress
-                progressIndicator.textContent = `Verification ${currentAnnotationIndex + 1} of ${annotations.length}`;
+                progressIndicator.textContent = `Question ${currentAnnotationIndex + 1} of ${annotations.length}`;
                 progressIndicator.style.display = 'block';
                 
-                // Prepare English options (Option 1 is always correct originally)
-                const englishOptions = [
-                    { text: currentAnnotation.generated_option1, isCorrect: true },
-                    { text: currentAnnotation.generated_option2, isCorrect: false },
-                    { text: currentAnnotation.generated_option3, isCorrect: false },
-                    { text: currentAnnotation.generated_option4, isCorrect: false }
-                ];
-                
-                // Shuffle English options
-                const shuffledEnglishOptions = shuffleArray(englishOptions);
-                
-                // Build English question with shuffled options
-                let englishOptionsHtml = '';
-                shuffledEnglishOptions.forEach((option, index) => {
-                    const label = String.fromCharCode(65 + index); // A, B, C, D
-                    englishOptionsHtml += `
-                        <div class="template-option">
-                            <span class="option-label-inline">${label}.</span> ${option.text}
-                        </div>
-                    `;
-                });
-                
-                englishFullTemplate.innerHTML = `
-                    <div class="full-template">
-                        <div class="template-question">${currentAnnotation.generated_question}</div>
-                        ${englishOptionsHtml}
-                    </div>
-                `;
-                
-                // Prepare translated options
-                const translatedOptions = [
-                    { text: currentAnnotation.translated_option1 },
-                    { text: currentAnnotation.translated_option2 },
-                    { text: currentAnnotation.translated_option3 },
-                    { text: currentAnnotation.translated_option4 }
-                ];
-                
-                // Shuffle translated options
-                const shuffledTranslatedOptions = shuffleArray(translatedOptions);
-                
-                // Build translated question with shuffled options
-                let translatedOptionsHtml = '';
-                shuffledTranslatedOptions.forEach((option, index) => {
-                    const label = String.fromCharCode(65 + index); // A, B, C, D
-                    translatedOptionsHtml += `
-                        <div class="template-option">
-                            <span class="option-label-inline">${label}.</span> ${option.text}
-                        </div>
-                    `;
-                });
-                
-                translatedFullTemplate.innerHTML = `
+                // Display translated question
+                translatedQuestionDisplay.innerHTML = `
                     <div class="full-template">
                         <div class="template-question">${currentAnnotation.translated_question}</div>
-                        ${translatedOptionsHtml}
                     </div>
                 `;
                 
-                // Prepare options (Option 1 is always correct originally)
+                // Prepare translated options (Option 1 is always correct originally)
                 const options = [
-                    { text: currentAnnotation.generated_option1, originalPosition: 'A', isCorrect: true },
-                    { text: currentAnnotation.generated_option2, originalPosition: 'B', isCorrect: false },
-                    { text: currentAnnotation.generated_option3, originalPosition: 'C', isCorrect: false },
-                    { text: currentAnnotation.generated_option4, originalPosition: 'D', isCorrect: false }
+                    { text: currentAnnotation.translated_option1, originalPosition: 'A', isCorrect: true },
+                    { text: currentAnnotation.translated_option2, originalPosition: 'B', isCorrect: false },
+                    { text: currentAnnotation.translated_option3, originalPosition: 'C', isCorrect: false },
+                    { text: currentAnnotation.translated_option4, originalPosition: 'D', isCorrect: false }
                 ];
                 
                 // Shuffle options
                 shuffledOptions = shuffleArray(options);
                 
-                // Display options
+                // Display shuffled options
                 optionsContainer.innerHTML = '';
                 shuffledOptions.forEach((option, index) => {
                     const label = String.fromCharCode(65 + index); // A, B, C, D
