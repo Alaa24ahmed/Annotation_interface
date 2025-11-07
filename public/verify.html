@@ -336,8 +336,25 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 const verifierId = urlParams.get('id');
                 const subset = urlParams.get('subset');
+                const reset = urlParams.get('reset');
                 
-                const validPilotIds = ['742891', '586234', '193847', '415672', '829456', '651327'];
+                // Check for reset parameter
+                if (reset === 'true' && verifierId && subset) {
+                    const subsetNum = parseInt(subset);
+                    if (subsetNum >= 1 && subsetNum <= 10) {
+                        // Clear verification progress
+                        const resetKey = `verification_subset_${subsetNum}_user_${verifierId}_index`;
+                        localStorage.removeItem(resetKey);
+                        
+                        console.log(`✅ Reset verification progress for subset ${subsetNum}, user ${verifierId}`);
+                        
+                        // Redirect without reset parameter to start fresh
+                        window.location.href = `${window.location.pathname}?id=${verifierId}&subset=${subset}`;
+                        return false;
+                    }
+                }
+                
+                const validPilotIds = ['742891', '586234', '193847', '415672', '829456', '651327', '129431'];
                 const hasValidId = verifierId && validPilotIds.includes(verifierId);
                 const hasSubset = subset && parseInt(subset) >= 1 && parseInt(subset) <= 10;
                 
@@ -369,7 +386,8 @@
                     '193847': { language: 'Egyptian Arabic', country: 'Egypt' },
                     '415672': { language: 'Hindi', country: 'India' },
                     '829456': { language: 'Tagalog', country: 'Philippines' },
-                    '651327': { language: 'Kazakh', country: 'Kazakhstan' }
+                    '651327': { language: 'Kazakh', country: 'Kazakhstan' },
+                    '129431': { language: 'Amharic', country: 'Ethiopia' }
                 };
                 return demographics[userId] || { language: null, country: null };
             }
@@ -380,12 +398,16 @@
             const subsetId = parseInt(urlParams.get('subset'));
             const demographics = getUserDemographics(verifierId);
             
+            // localStorage key for tracking verification progress
+            const progressKey = `verification_subset_${subsetId}_user_${verifierId}_index`;
+            
             let annotations = [];
             let currentAnnotationIndex = 0;
             let currentAnnotation = null;
             let shuffledOptions = [];
             let selectedOption = null;
             let questionStartTime = null;
+            let totalVerifiedCount = 0; // Track how many were already verified
 
             const loadingDiv = document.getElementById('loading');
             const verificationContainer = document.getElementById('verification-container');
@@ -422,6 +444,16 @@
                         return;
                     }
                     
+                    // Load saved progress from localStorage
+                    const savedIndex = localStorage.getItem(progressKey);
+                    if (savedIndex !== null) {
+                        const index = parseInt(savedIndex);
+                        if (index >= 0 && index < annotations.length) {
+                            currentAnnotationIndex = index;
+                            console.log(`✅ Restored progress: starting at question ${index + 1}`);
+                        }
+                    }
+                    
                     loadCurrentAnnotation();
                     
                 } catch (error) {
@@ -440,6 +472,9 @@
                     if (response.ok) {
                         const data = await response.json();
                         const verifiedAnnotationIds = data.verified_annotation_ids || [];
+                        
+                        // Store how many were already verified
+                        totalVerifiedCount = verifiedAnnotationIds.length;
                         
                         // Remove already verified annotations
                         annotations = annotations.filter(ann => !verifiedAnnotationIds.includes(ann.id));
@@ -464,15 +499,22 @@
             // Load current annotation
             function loadCurrentAnnotation() {
                 if (currentAnnotationIndex >= annotations.length) {
+                    // Clear progress when complete
+                    localStorage.removeItem(progressKey);
                     showCompletionMessage('All annotations verified! Great work!');
                     return;
                 }
 
+                // Save current progress to localStorage
+                localStorage.setItem(progressKey, currentAnnotationIndex.toString());
+                
                 currentAnnotation = annotations[currentAnnotationIndex];
                 questionStartTime = Date.now();
                 
-                // Update progress
-                progressIndicator.textContent = `Question ${currentAnnotationIndex + 1} of ${annotations.length}`;
+                // Update progress - show actual question number (including already verified)
+                const currentQuestionNumber = totalVerifiedCount + currentAnnotationIndex + 1;
+                const totalQuestions = totalVerifiedCount + annotations.length;
+                progressIndicator.textContent = `Question ${currentQuestionNumber} of ${totalQuestions}`;
                 progressIndicator.style.display = 'block';
                 
                 // Display translated question

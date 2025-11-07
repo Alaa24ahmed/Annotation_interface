@@ -1280,9 +1280,27 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 const pilotId = urlParams.get('id');
                 const subset = urlParams.get('subset');
+                const reset = urlParams.get('reset');
+                
+                // Check for reset parameter
+                if (reset === 'true' && pilotId && subset) {
+                    const subsetNum = parseInt(subset);
+                    if (subsetNum >= 1 && subsetNum <= 10) {
+                        // Clear subset progress
+                        localStorage.removeItem(`subset_${subsetNum}_user_${pilotId}_completed`);
+                        localStorage.removeItem(`current_template_${pilotId}`);
+                        localStorage.removeItem(`template_progress_${pilotId}`);
+                        
+                        console.log(`✅ Reset progress for subset ${subsetNum}, user ${pilotId}`);
+                        
+                        // Redirect without reset parameter to start fresh
+                        window.location.href = `${window.location.pathname}?id=${pilotId}&subset=${subset}`;
+                        return false;
+                    }
+                }
                 
                 // Check if required parameters are present
-                const validPilotIds = ['742891', '586234', '193847', '415672', '829456', '651327'];
+                const validPilotIds = ['742891', '586234', '193847', '415672', '829456', '651327', '129431'];
                 const hasValidId = pilotId && validPilotIds.includes(pilotId);
                 const hasSubset = subset && parseInt(subset) >= 1 && parseInt(subset) <= 10;
                 
@@ -1438,6 +1456,8 @@
                     return { language: 'Tagalog', country: 'Philippines' };
                 } else if (userId === '651327') {
                     return { language: 'Kazakh', country: 'Kazakhstan' };
+                } else if (userId === '129431') {
+                    return { language: 'Amharic', country: 'Ethiopia' };
                 }
                 
                 return { language: null, country: null };
