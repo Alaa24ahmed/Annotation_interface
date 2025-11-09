@@ -1291,7 +1291,15 @@
                         localStorage.removeItem(`current_template_${pilotId}`);
                         localStorage.removeItem(`template_progress_${pilotId}`);
                         
+                        // Clear stored pilot ID and dev user ID to ensure fresh start
+                        localStorage.removeItem('pilotId');
+                        localStorage.removeItem('devUserId');
+                        
+                        // Clear fingerprint for this user to regenerate
+                        localStorage.removeItem(`fingerprint_${pilotId}`);
+                        
                         console.log(`✅ Reset progress for subset ${subsetNum}, user ${pilotId}`);
+                        console.log(`✅ Cleared stored IDs and fingerprint`);
                         
                         // Redirect without reset parameter to start fresh
                         window.location.href = `${window.location.pathname}?id=${pilotId}&subset=${subset}`;
@@ -1470,14 +1478,14 @@
                 const pilotId = urlParams.get('id');
                 
                 
-                if (pilotId && (pilotId === '742891' || pilotId === '586234' || pilotId === '193847' || pilotId === '415672' || pilotId === '829456' || pilotId === '651327')) {
+                if (pilotId && (pilotId === '742891' || pilotId === '586234' || pilotId === '193847' || pilotId === '415672' || pilotId === '829456' || pilotId === '651327' || pilotId === '129431')) {
                     localStorage.setItem('pilotId', pilotId);
                     return pilotId;
                 }
                 
                 // Check if we have stored Pilot ID
                 const storedPilotId = localStorage.getItem('pilotId');
-                if (storedPilotId && (storedPilotId === '742891' || storedPilotId === '586234' || storedPilotId === '193847' || storedPilotId === '415672' || storedPilotId === '829456' || storedPilotId === '651327')) {
+                if (storedPilotId && (storedPilotId === '742891' || storedPilotId === '586234' || storedPilotId === '193847' || storedPilotId === '415672' || storedPilotId === '829456' || storedPilotId === '651327' || storedPilotId === '129431')) {
                     return storedPilotId;
                 }
                 
