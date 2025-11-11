@@ -1364,6 +1364,7 @@
             let currentSubset = null;
             let subsetTemplates = [];
             let currentTemplateIndex = 0;
+            let forceTemplateLoad = false; // Flag to force loading specific template from URL
             
             // Existing global variables
             const loadingDiv = document.getElementById('loading');
@@ -1543,6 +1544,7 @@
                         const templatePosition = parseInt(templateParam);
                         if (templatePosition >= 1 && templatePosition <= subsetTemplates.length) {
                             currentTemplateIndex = templatePosition - 1;
+                            forceTemplateLoad = true; // Force load this template even if completed
                             console.log(`📍 Starting at template ${templatePosition} as specified in URL`);
                         } else {
                             console.warn(`Invalid template parameter: ${templateParam}. Must be between 1 and ${subsetTemplates.length}`);
@@ -1550,12 +1552,14 @@
                             const completedKey = `subset_${subset}_user_${currentUserId}_completed`;
                             const completedTemplates = JSON.parse(localStorage.getItem(completedKey) || '[]');
                             currentTemplateIndex = completedTemplates.length;
+                            forceTemplateLoad = false;
                         }
                     } else {
                         // Set starting index based on completed templates (default behavior)
                         const completedKey = `subset_${subset}_user_${currentUserId}_completed`;
                         const completedTemplates = JSON.parse(localStorage.getItem(completedKey) || '[]');
                         currentTemplateIndex = completedTemplates.length; // Start from next uncompleted template
+                        forceTemplateLoad = false;
                     }
                     
                     
@@ -1569,6 +1573,14 @@
             function getCurrentSubsetTemplate() {
                 if (!subsetTemplates || subsetTemplates.length === 0) {
                     return null;
+                }
+                
+                // If forceTemplateLoad is true, load the exact template at currentTemplateIndex
+                if (forceTemplateLoad) {
+                    forceTemplateLoad = false; // Reset flag after using it once
+                    if (currentTemplateIndex >= 0 && currentTemplateIndex < subsetTemplates.length) {
+                        return subsetTemplates[currentTemplateIndex];
+                    }
                 }
                 
                 // Find first uncompleted template starting from currentTemplateIndex
