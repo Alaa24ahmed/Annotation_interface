@@ -1534,10 +1534,29 @@
                     subsetTemplates = data.templates;
                     currentSubset = subset;
                     
-                    // Set starting index based on completed templates
-                    const completedKey = `subset_${subset}_user_${currentUserId}_completed`;
-                    const completedTemplates = JSON.parse(localStorage.getItem(completedKey) || '[]');
-                    currentTemplateIndex = completedTemplates.length; // Start from next uncompleted template
+                    // Check if template parameter is provided in URL
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const templateParam = urlParams.get('template');
+                    
+                    if (templateParam) {
+                        // Start at specific template position (1-indexed in URL, 0-indexed internally)
+                        const templatePosition = parseInt(templateParam);
+                        if (templatePosition >= 1 && templatePosition <= subsetTemplates.length) {
+                            currentTemplateIndex = templatePosition - 1;
+                            console.log(`📍 Starting at template ${templatePosition} as specified in URL`);
+                        } else {
+                            console.warn(`Invalid template parameter: ${templateParam}. Must be between 1 and ${subsetTemplates.length}`);
+                            // Fall back to default behavior
+                            const completedKey = `subset_${subset}_user_${currentUserId}_completed`;
+                            const completedTemplates = JSON.parse(localStorage.getItem(completedKey) || '[]');
+                            currentTemplateIndex = completedTemplates.length;
+                        }
+                    } else {
+                        // Set starting index based on completed templates (default behavior)
+                        const completedKey = `subset_${subset}_user_${currentUserId}_completed`;
+                        const completedTemplates = JSON.parse(localStorage.getItem(completedKey) || '[]');
+                        currentTemplateIndex = completedTemplates.length; // Start from next uncompleted template
+                    }
                     
                     
                     return true;
