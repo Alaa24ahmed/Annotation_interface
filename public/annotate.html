@@ -2275,7 +2275,7 @@
                 return examples.default;
             }
             
-            // NEW: Detect subset and position from localStorage (fast)
+            // NEW: Detect subset and template position (handles normal + deep-link cases)
             function detectSubsetAndPosition() {
                 // Check URL for subset parameter (?subset=A)
                 const urlParams = new URLSearchParams(window.location.search);
@@ -2284,12 +2284,20 @@
                 if (subsetFromUrl) {
                     currentSubsetId = subsetFromUrl;
                     
-                    // Use localStorage to track completed templates for this user + subset
-                    const completedKey = `subset_${currentSubsetId}_user_${currentUserId}_completed`;
-                    const completedTemplates = JSON.parse(localStorage.getItem(completedKey) || '[]');
-                    
-                    // Current position = number of completed templates + 1
-                    currentTemplatePosition = completedTemplates.length + 1;
+                    if (Number.isInteger(currentTemplateIndex) && currentTemplateIndex >= 0) {
+                        // We know exactly which template in the subset is loaded right now
+                        currentTemplatePosition = currentTemplateIndex + 1;
+                    } else {
+                        // Fallback to progress tracking (next unfinished template)
+                        const completedKey = `subset_${currentSubsetId}_user_${currentUserId}_completed`;
+                        const completedTemplates = JSON.parse(localStorage.getItem(completedKey) || '[]');
+                        const nextPosition = completedTemplates.length + 1;
+                        if (subsetTemplates && subsetTemplates.length > 0) {
+                            currentTemplatePosition = Math.min(nextPosition, subsetTemplates.length);
+                        } else {
+                            currentTemplatePosition = nextPosition;
+                        }
+                    }
                     
                 } else {
                     // Random mode - no subset
