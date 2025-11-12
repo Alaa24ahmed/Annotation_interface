@@ -1636,8 +1636,16 @@
                 const completedKey = `subset_${currentSubset}_user_${currentUserId}_completed`;
                 const completedTemplates = JSON.parse(localStorage.getItem(completedKey) || '[]');
                 
+                let currentPosition = completedTemplates.length + 1;
+                if (currentTemplatePosition && currentTemplatePosition >= 1) {
+                    currentPosition = currentTemplatePosition;
+                }
+                if (subsetTemplates && subsetTemplates.length > 0) {
+                    currentPosition = Math.min(currentPosition, subsetTemplates.length);
+                }
+                
                 return {
-                    current: completedTemplates.length + 1, // Next template to work on
+                    current: currentPosition,
                     total: subsetTemplates.length,
                     subset: currentSubset,
                     completed: isSubsetCompleted()
