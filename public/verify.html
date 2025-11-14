@@ -354,7 +354,7 @@
                     }
                 }
                 
-                const validPilotIds = ['742891', '586234', '193847', '415672', '829456', '651327', '129431'];
+                const validPilotIds = ['742891', '586234', '193847', '415672', '829456', '651327', '129431', '548792'];
                 const hasValidId = verifierId && validPilotIds.includes(verifierId);
                 const hasSubset = subset && parseInt(subset) >= 1 && parseInt(subset) <= 10;
                 
@@ -387,7 +387,8 @@
                     '415672': { language: 'Hindi', country: 'India' },
                     '829456': { language: 'Tagalog', country: 'Philippines' },
                     '651327': { language: 'Kazakh', country: 'Kazakhstan' },
-                    '129431': { language: 'Amharic', country: 'Ethiopia' }
+                    '129431': { language: 'Amharic', country: 'Ethiopia' },
+                    '548792': { language: 'Tunisian Arabic', country: 'Tunisia' }
                 };
                 return demographics[userId] || { language: null, country: null };
             }

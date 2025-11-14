@@ -137,7 +137,7 @@ async function saveVerification(req, res) {
     }
 
     // Validate verifier_user_id
-    const validPilotIds = ['742891', '586234', '193847', '415672', '829456', '651327', '129431'];
+    const validPilotIds = ['742891', '586234', '193847', '415672', '829456', '651327', '129431', '548792'];
     if (!validPilotIds.includes(verifier_user_id)) {
       return res.status(403).json({
         error: 'Invalid verifier user ID'

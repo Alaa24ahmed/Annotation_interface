@@ -43,7 +43,7 @@ exports.saveAnnotation = async (req, res) => {
       } = req.body;
       
       // Determine user type for logging
-      const isPilotUser = user_id === '742891' || user_id === '586234' || user_id === '193847' || user_id === '415672' || user_id === '829456' || user_id === '651327' || user_id === '129431';
+      const isPilotUser = user_id === '742891' || user_id === '586234' || user_id === '193847' || user_id === '415672' || user_id === '829456' || user_id === '651327' || user_id === '129431' || user_id === '548792';
       
       if (!template_id) {
         return res.status(400).json({ error: 'Missing template ID' });
@@ -204,7 +204,7 @@ exports.logTemplateSkip = async (req, res) => {
     } = req.body;
     
     // Determine user type for logging
-    const isPilotUser = user_id === '742891' || user_id === '586234' || user_id === '193847' || user_id === '415672' || user_id === '829456' || user_id === '651327' || user_id === '129431';
+    const isPilotUser = user_id === '742891' || user_id === '586234' || user_id === '193847' || user_id === '415672' || user_id === '829456' || user_id === '651327' || user_id === '129431' || user_id === '548792';
     
     // Validate required fields
     if (!template_id || !user_id || !device_fingerprint || !skip_reason) {

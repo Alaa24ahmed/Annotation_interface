@@ -1308,7 +1308,7 @@
                 }
                 
                 // Check if required parameters are present
-                const validPilotIds = ['742891', '586234', '193847', '415672', '829456', '651327', '129431'];
+                const validPilotIds = ['742891', '586234', '193847', '415672', '829456', '651327', '129431', '548792'];
                 const hasValidId = pilotId && validPilotIds.includes(pilotId);
                 const hasSubset = subset && parseInt(subset) >= 1 && parseInt(subset) <= 10;
                 
@@ -1360,6 +1360,9 @@
             let currentUserId = null;
             let deviceFingerprint = null;
             
+            // Submission state to prevent double submissions
+            let isSubmitting = false;
+            
             // Subset-based template system variables
             let currentSubset = null;
             let subsetTemplates = [];
@@ -1399,7 +1402,7 @@
             
             // NEW: Timing and subset tracking
             let templateStartTime = null;
-            let currentSubsetId = null;
+            // Note: currentSubsetId removed - using currentSubset consistently
             let currentTemplatePosition = null;
             
             // Generate device fingerprint using FingerprintJS
@@ -1467,6 +1470,8 @@
                     return { language: 'Kazakh', country: 'Kazakhstan' };
                 } else if (userId === '129431') {
                     return { language: 'Amharic', country: 'Ethiopia' };
+                } else if (userId === '548792') {
+                    return { language: 'Tunisian Arabic', country: 'Tunisia' };
                 }
                 
                 return { language: null, country: null };
@@ -1479,14 +1484,14 @@
                 const pilotId = urlParams.get('id');
                 
                 
-                if (pilotId && (pilotId === '742891' || pilotId === '586234' || pilotId === '193847' || pilotId === '415672' || pilotId === '829456' || pilotId === '651327' || pilotId === '129431')) {
+                if (pilotId && (pilotId === '742891' || pilotId === '586234' || pilotId === '193847' || pilotId === '415672' || pilotId === '829456' || pilotId === '651327' || pilotId === '129431' || pilotId === '548792')) {
                     localStorage.setItem('pilotId', pilotId);
                     return pilotId;
                 }
                 
                 // Check if we have stored Pilot ID
                 const storedPilotId = localStorage.getItem('pilotId');
-                if (storedPilotId && (storedPilotId === '742891' || storedPilotId === '586234' || storedPilotId === '193847' || storedPilotId === '415672' || storedPilotId === '829456' || storedPilotId === '651327' || storedPilotId === '129431')) {
+                if (storedPilotId && (storedPilotId === '742891' || storedPilotId === '586234' || storedPilotId === '193847' || storedPilotId === '415672' || storedPilotId === '829456' || storedPilotId === '651327' || storedPilotId === '129431' || storedPilotId === '548792')) {
                     return storedPilotId;
                 }
                 
@@ -1558,8 +1563,29 @@
                         // Set starting index based on completed templates (default behavior)
                         const completedKey = `subset_${subset}_user_${currentUserId}_completed`;
                         const completedTemplates = JSON.parse(localStorage.getItem(completedKey) || '[]');
-                        currentTemplateIndex = completedTemplates.length; // Start from next uncompleted template
+                        
+                        // Find first uncompleted template index (more robust than just using length)
+                        let firstUncompletedIndex = 0;
+                        for (let i = 0; i < subsetTemplates.length; i++) {
+                            if (!completedTemplates.includes(subsetTemplates[i].id)) {
+                                firstUncompletedIndex = i;
+                                break;
+                            }
+                            // If we reach the end and all are completed
+                            if (i === subsetTemplates.length - 1) {
+                                firstUncompletedIndex = subsetTemplates.length; // Will trigger completion
+                            }
+                        }
+                        
+                        currentTemplateIndex = firstUncompletedIndex;
                         forceTemplateLoad = false;
+                        
+                        console.log('📍 Starting position:', {
+                            completedCount: completedTemplates.length,
+                            completedIds: completedTemplates,
+                            startIndex: currentTemplateIndex,
+                            startPosition: currentTemplateIndex + 1
+                        });
                     }
                     
                     
@@ -1572,6 +1598,7 @@
             // Get current template from subset (skip completed ones)
             function getCurrentSubsetTemplate() {
                 if (!subsetTemplates || subsetTemplates.length === 0) {
+                    console.log('⚠️ No subset templates available');
                     return null;
                 }
                 
@@ -1579,6 +1606,7 @@
                 if (forceTemplateLoad) {
                     forceTemplateLoad = false; // Reset flag after using it once
                     if (currentTemplateIndex >= 0 && currentTemplateIndex < subsetTemplates.length) {
+                        console.log('🔄 Force loading template at index:', currentTemplateIndex);
                         return subsetTemplates[currentTemplateIndex];
                     }
                 }
@@ -1587,15 +1615,27 @@
                 const completedKey = `subset_${currentSubset}_user_${currentUserId}_completed`;
                 const completedTemplates = JSON.parse(localStorage.getItem(completedKey) || '[]');
                 
+                console.log('🔍 Searching for next uncompleted template:', {
+                    startIndex: currentTemplateIndex,
+                    totalTemplates: subsetTemplates.length,
+                    completedIds: completedTemplates
+                });
+                
                 for (let i = currentTemplateIndex; i < subsetTemplates.length; i++) {
                     const template = subsetTemplates[i];
                     if (!completedTemplates.includes(template.id)) {
                         currentTemplateIndex = i; // Update index to this uncompleted template
+                        console.log('✅ Found uncompleted template:', {
+                            templateId: template.id,
+                            index: i,
+                            position: i + 1
+                        });
                         return template;
                     }
                 }
                 
                 // All templates completed
+                console.log('🎉 All templates in subset completed!');
                 return null;
             }
             
@@ -1624,7 +1664,17 @@
                 const completedTemplates = JSON.parse(localStorage.getItem(completedKey) || '[]');
                 
                 // Check if all template IDs are in completed list
-                return subsetTemplates.every(template => completedTemplates.includes(template.id));
+                const allCompleted = subsetTemplates.every(template => completedTemplates.includes(template.id));
+                
+                console.log('📊 Subset completion check:', {
+                    subset: currentSubset,
+                    totalTemplates: subsetTemplates.length,
+                    completedCount: completedTemplates.length,
+                    completedIds: completedTemplates,
+                    allCompleted: allCompleted
+                });
+                
+                return allCompleted;
             }
             
             // Get progress info for display
@@ -2290,14 +2340,15 @@
                 const subsetFromUrl = urlParams.get('subset');
                 
                 if (subsetFromUrl) {
-                    currentSubsetId = subsetFromUrl;
+                    // Use currentSubset for consistency (matches other functions)
+                    currentSubset = parseInt(subsetFromUrl);
                     
                     if (Number.isInteger(currentTemplateIndex) && currentTemplateIndex >= 0) {
                         // We know exactly which template in the subset is loaded right now
                         currentTemplatePosition = currentTemplateIndex + 1;
                     } else {
                         // Fallback to progress tracking (next unfinished template)
-                        const completedKey = `subset_${currentSubsetId}_user_${currentUserId}_completed`;
+                        const completedKey = `subset_${currentSubset}_user_${currentUserId}_completed`;
                         const completedTemplates = JSON.parse(localStorage.getItem(completedKey) || '[]');
                         const nextPosition = completedTemplates.length + 1;
                         if (subsetTemplates && subsetTemplates.length > 0) {
@@ -2309,24 +2360,34 @@
                     
                 } else {
                     // Random mode - no subset
-                    currentSubsetId = null;
+                    currentSubset = null;
                     currentTemplatePosition = null;
                 }
             }
             
             // NEW: Mark template as completed in localStorage
             function markTemplateCompleted(templateId) {
-                if (!currentSubsetId || !currentUserId || !templateId) {
+                if (!currentSubset || !currentUserId || !templateId) {
+                    console.log('⚠️ Cannot mark template completed - missing data:', { currentSubset, currentUserId, templateId });
                     return;
                 }
                 
-                const completedKey = `subset_${currentSubsetId}_user_${currentUserId}_completed`;
+                const completedKey = `subset_${currentSubset}_user_${currentUserId}_completed`;
                 const completedTemplates = JSON.parse(localStorage.getItem(completedKey) || '[]');
                 
                 // Add template ID if not already completed
                 if (!completedTemplates.includes(templateId)) {
                     completedTemplates.push(templateId);
                     localStorage.setItem(completedKey, JSON.stringify(completedTemplates));
+                    console.log('✅ Template marked completed:', {
+                        templateId,
+                        subset: currentSubset,
+                        userId: currentUserId,
+                        totalCompleted: completedTemplates.length,
+                        completedIds: completedTemplates
+                    });
+                } else {
+                    console.log('ℹ️ Template already marked as completed:', templateId);
                 }
             }
                     
@@ -3101,6 +3162,12 @@
             
             // Submit the annotation
             function submitAnnotation() {
+                // Prevent double submission
+                if (isSubmitting) {
+                    console.log('⚠️ Submission already in progress, ignoring duplicate click');
+                    return;
+                }
+                
                 // Validate before submission
                 if (!validateAnnotation()) {
                     statusDiv.className = 'status error';
@@ -3162,7 +3229,7 @@
                     country: demographics.country,
                     
                     // NEW: Add subset tracking and timing data
-                    subset_id: currentSubsetId,
+                    subset_id: currentSubset,
                     template_position: currentTemplatePosition,
                     completion_status: 'completed',
                     time_spent_seconds: templateStartTime ? Math.round((Date.now() - templateStartTime) / 1000) : null
@@ -3211,6 +3278,11 @@
                     statusDiv.style.display = 'block';
                     return;
                 }
+                
+                // Set submission flag and disable button
+                isSubmitting = true;
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Submitting...';
                 
                 // Save to Supabase
                 saveToSupabase(questionData);
@@ -3279,7 +3351,7 @@
                             country: demographics.country,
                             
                             // NEW: Add subset tracking and timing data
-                            subset_id: currentSubsetId,
+                            subset_id: currentSubset,
                             template_position: currentTemplatePosition,
                             completion_status: 'skipped',
                             time_spent_seconds: templateStartTime ? Math.round((Date.now() - templateStartTime) / 1000) : null
@@ -3395,6 +3467,11 @@
                     
                     // Handle next template based on mode
                     setTimeout(() => {
+                        // Reset submission flag
+                        isSubmitting = false;
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Submit Annotation';
+                        
                         if (currentSubset) {
                             // Subset mode: move to next template in subset
                             if (moveToNextTemplate()) {
@@ -3410,6 +3487,11 @@
                     }, 2000);
                     
                 } catch (error) {
+                    // Reset submission flag on error
+                    isSubmitting = false;
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Submit Annotation';
+                    
                     statusDiv.className = 'status error';
                     statusDiv.textContent = 'Error: ' + error.message;
                     statusDiv.style.display = 'block';
