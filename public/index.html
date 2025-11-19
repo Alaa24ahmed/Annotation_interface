@@ -1019,13 +1019,32 @@
                 observer.observe(element);
             });
             
+            // ============================================
+            // PILOT USERS CONFIGURATION - EDIT HERE ONLY
+            // ============================================
+            const PILOT_USERS_CONFIG = [
+                { id: '742891', language: 'Chinese', country: 'China' },
+                { id: '586234', language: 'Indonesian', country: 'Indonesia' },
+                { id: '193847', language: 'Egyptian Arabic', country: 'Egypt' },
+                { id: '415672', language: 'Hindi', country: 'India' },
+                { id: '829456', language: 'Tagalog', country: 'Philippines' },
+                { id: '651327', language: 'Kazakh', country: 'Kazakhstan' },
+                { id: '129431', language: 'Amharic', country: 'Ethiopia' },
+                { id: '548792', language: 'Tunisian Arabic', country: 'Tunisia' },
+                { id: '305864', language: 'Brazilian Portuguese', country: 'Brazil' }
+            ];
+            
+            // Derived values - DO NOT EDIT (automatically generated from config above)
+            const validPilotIds = PILOT_USERS_CONFIG.map(u => u.id);
+            const pilotUsersMap = new Map(PILOT_USERS_CONFIG.map(u => [u.id, { language: u.language, country: u.country }]));
+            // ============================================
+            
             // Handle ID parameter passing and access control
             const urlParams = new URLSearchParams(window.location.search);
             const pilotId = urlParams.get('id');
             const subset = urlParams.get('subset');
             
             // Block access to base URL without proper parameters
-            const validPilotIds = ['742891', '586234', '193847', '415672', '829456', '651327', '129431', '548792'];
             const hasValidId = pilotId && validPilotIds.includes(pilotId);
             const hasSubset = subset && parseInt(subset) >= 1 && parseInt(subset) <= 10;
             
@@ -1122,24 +1141,8 @@
                 });
                 
                 // Show debug info for pilot users
-                let demographics;
-                if (pilotId === '742891') {
-                    demographics = 'Chinese, China';
-                } else if (pilotId === '586234') {
-                    demographics = 'Indonesian, Indonesia';
-                } else if (pilotId === '193847') {
-                    demographics = 'Egyptian Arabic, Egypt';
-                } else if (pilotId === '415672') {
-                    demographics = 'Hindi, India';
-                } else if (pilotId === '829456') {
-                    demographics = 'Tagalog, Philippines';
-                } else if (pilotId === '651327') {
-                    demographics = 'Kazakh, Kazakhstan';
-                } else if (pilotId === '129431') {
-                    demographics = 'Amharic, Ethiopia';
-                } else if (pilotId === '548792') {
-                    demographics = 'Tunisian Arabic, Tunisia';
-                }
+                const userInfo = pilotUsersMap.get(pilotId);
+                const demographics = userInfo ? `${userInfo.language}, ${userInfo.country}` : 'Unknown';
                 console.log(`Pilot user ${pilotId} detected - Demographics: ${demographics}`);
                 if (subset) {
                     console.log(`Subset mode: ${subset} (templates ${(subset-1)*10+1}-${subset*10})`);

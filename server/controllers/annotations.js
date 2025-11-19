@@ -3,6 +3,26 @@
 require('dotenv').config();
 const supabase = require('../config/supabase');
 
+// ============================================
+// PILOT USERS CONFIGURATION - EDIT HERE ONLY
+// ============================================
+const PILOT_USERS_CONFIG = [
+  { id: '742891', language: 'Chinese', country: 'China' },
+  { id: '586234', language: 'Indonesian', country: 'Indonesia' },
+  { id: '193847', language: 'Egyptian Arabic', country: 'Egypt' },
+  { id: '415672', language: 'Hindi', country: 'India' },
+  { id: '829456', language: 'Tagalog', country: 'Philippines' },
+  { id: '651327', language: 'Kazakh', country: 'Kazakhstan' },
+  { id: '129431', language: 'Amharic', country: 'Ethiopia' },
+  { id: '548792', language: 'Tunisian Arabic', country: 'Tunisia' },
+  { id: '305864', language: 'Brazilian Portuguese', country: 'Brazil' }
+];
+
+// Derived values - DO NOT EDIT
+const validPilotIds = PILOT_USERS_CONFIG.map(u => u.id);
+const isPilotUserId = (userId) => validPilotIds.includes(userId);
+// ============================================
+
 exports.saveAnnotation = async (req, res) => {
     try {
       console.log("Received annotation data:", req.body);
@@ -43,7 +63,7 @@ exports.saveAnnotation = async (req, res) => {
       } = req.body;
       
       // Determine user type for logging
-      const isPilotUser = user_id === '742891' || user_id === '586234' || user_id === '193847' || user_id === '415672' || user_id === '829456' || user_id === '651327' || user_id === '129431' || user_id === '548792';
+      const isPilotUser = isPilotUserId(user_id);
       
       if (!template_id) {
         return res.status(400).json({ error: 'Missing template ID' });
@@ -204,7 +224,7 @@ exports.logTemplateSkip = async (req, res) => {
     } = req.body;
     
     // Determine user type for logging
-    const isPilotUser = user_id === '742891' || user_id === '586234' || user_id === '193847' || user_id === '415672' || user_id === '829456' || user_id === '651327' || user_id === '129431' || user_id === '548792';
+    const isPilotUser = isPilotUserId(user_id);
     
     // Validate required fields
     if (!template_id || !user_id || !device_fingerprint || !skip_reason) {

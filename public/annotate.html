@@ -1277,6 +1277,27 @@
         document.addEventListener('DOMContentLoaded', function() {
             // SECURITY CHECK: Block access without proper URL parameters
             function validateAccess() {
+                // ============================================
+                // PILOT USERS CONFIGURATION - EDIT HERE ONLY
+                // ============================================
+                const PILOT_USERS_CONFIG = [
+                    { id: '742891', language: 'Chinese', country: 'China' },
+                    { id: '586234', language: 'Indonesian', country: 'Indonesia' },
+                    { id: '193847', language: 'Egyptian Arabic', country: 'Egypt' },
+                    { id: '415672', language: 'Hindi', country: 'India' },
+                    { id: '829456', language: 'Tagalog', country: 'Philippines' },
+                    { id: '651327', language: 'Kazakh', country: 'Kazakhstan' },
+                    { id: '129431', language: 'Amharic', country: 'Ethiopia' },
+                    { id: '548792', language: 'Tunisian Arabic', country: 'Tunisia' },
+                    { id: '305864', language: 'Brazilian Portuguese', country: 'Brazil' }
+                ];
+                
+                // Derived values - DO NOT EDIT (automatically generated from config above)
+                const validPilotIds = PILOT_USERS_CONFIG.map(u => u.id);
+                window.pilotUsersMap = new Map(PILOT_USERS_CONFIG.map(u => [u.id, { language: u.language, country: u.country }]));
+                window.validPilotIds = validPilotIds; // Make available globally for other functions
+                // ============================================
+                
                 const urlParams = new URLSearchParams(window.location.search);
                 const pilotId = urlParams.get('id');
                 const subset = urlParams.get('subset');
@@ -1308,7 +1329,6 @@
                 }
                 
                 // Check if required parameters are present
-                const validPilotIds = ['742891', '586234', '193847', '415672', '829456', '651327', '129431', '548792'];
                 const hasValidId = pilotId && validPilotIds.includes(pilotId);
                 const hasSubset = subset && parseInt(subset) >= 1 && parseInt(subset) <= 10;
                 
@@ -1454,27 +1474,9 @@
             
             // Pilot test user demographics mapping
             function getPilotUserDemographics(userId) {
-                
-                // Pilot IDs for testing
-                if (userId === '742891') {
-                    return { language: 'Chinese', country: 'China' };
-                } else if (userId === '586234') {
-                    return { language: 'Indonesian', country: 'Indonesia' };
-                } else if (userId === '193847') {
-                    return { language: 'Egyptian Arabic', country: 'Egypt' };
-                } else if (userId === '415672') {
-                    return { language: 'Hindi', country: 'India' };
-                } else if (userId === '829456') {
-                    return { language: 'Tagalog', country: 'Philippines' };
-                } else if (userId === '651327') {
-                    return { language: 'Kazakh', country: 'Kazakhstan' };
-                } else if (userId === '129431') {
-                    return { language: 'Amharic', country: 'Ethiopia' };
-                } else if (userId === '548792') {
-                    return { language: 'Tunisian Arabic', country: 'Tunisia' };
-                }
-                
-                return { language: null, country: null };
+                // Use the global pilotUsersMap created in validateAccess()
+                const userInfo = window.pilotUsersMap.get(userId);
+                return userInfo ? { language: userInfo.language, country: userInfo.country } : { language: null, country: null };
             }
             
             // Get user ID (Pilot test ready)
@@ -1483,15 +1485,15 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 const pilotId = urlParams.get('id');
                 
-                
-                if (pilotId && (pilotId === '742891' || pilotId === '586234' || pilotId === '193847' || pilotId === '415672' || pilotId === '829456' || pilotId === '651327' || pilotId === '129431' || pilotId === '548792')) {
+                // Use the global validPilotIds created in validateAccess()
+                if (pilotId && window.validPilotIds.includes(pilotId)) {
                     localStorage.setItem('pilotId', pilotId);
                     return pilotId;
                 }
                 
                 // Check if we have stored Pilot ID
                 const storedPilotId = localStorage.getItem('pilotId');
-                if (storedPilotId && (storedPilotId === '742891' || storedPilotId === '586234' || storedPilotId === '193847' || storedPilotId === '415672' || storedPilotId === '829456' || storedPilotId === '651327' || storedPilotId === '129431' || storedPilotId === '548792')) {
+                if (storedPilotId && window.validPilotIds.includes(storedPilotId)) {
                     return storedPilotId;
                 }
                 
