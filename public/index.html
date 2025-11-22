@@ -1019,22 +1019,21 @@
                 observer.observe(element);
             });
             
-            // ============================================
-            // PILOT USERS CONFIGURATION - EDIT HERE ONLY
-            // ============================================
-            const PILOT_USERS_CONFIG = [
-                { id: '742891', language: 'Chinese', country: 'China' },
-                { id: '586234', language: 'Indonesian', country: 'Indonesia' },
-                { id: '193847', language: 'Egyptian Arabic', country: 'Egypt' },
-                { id: '415672', language: 'Hindi', country: 'India' },
-                { id: '829456', language: 'Tagalog', country: 'Philippines' },
-                { id: '651327', language: 'Kazakh', country: 'Kazakhstan' },
-                { id: '129431', language: 'Amharic', country: 'Ethiopia' },
-                { id: '548792', language: 'Tunisian Arabic', country: 'Tunisia' },
-                { id: '305864', language: 'Brazilian Portuguese', country: 'Brazil' }
-            ];
-            
-            // Derived values - DO NOT EDIT (automatically generated from config above)
+// ============================================
+// PILOT USERS CONFIGURATION - EDIT HERE ONLY
+// ============================================
+const PILOT_USERS_CONFIG = [
+  { id: '742891', language: 'Chinese', country: 'China' },
+  { id: '586234', language: 'Indonesian', country: 'Indonesia' },
+  { id: '193847', language: 'Egyptian Arabic', country: 'Egypt' },
+  { id: '415672', language: 'Hindi', country: 'India' },
+  { id: '829456', language: 'Tagalog', country: 'Philippines' },
+  { id: '651327', language: 'Kazakh', country: 'Kazakhstan' },
+  { id: '129431', language: 'Amharic', country: 'Ethiopia' },
+  { id: '548792', language: 'Tunisian Arabic', country: 'Tunisia' },
+  { id: '305864', language: 'Brazilian Portuguese', country: 'Brazil' },
+  { id: '762549', language: 'Mexican Spanish', country: 'Mexico' }
+];            // Derived values - DO NOT EDIT (automatically generated from config above)
             const validPilotIds = PILOT_USERS_CONFIG.map(u => u.id);
             const pilotUsersMap = new Map(PILOT_USERS_CONFIG.map(u => [u.id, { language: u.language, country: u.country }]));
             // ============================================
