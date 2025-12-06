@@ -21,7 +21,9 @@ const PILOT_USERS_CONFIG = [
   { id: '591823', language: 'Greek', country: 'Greece' },
   { id: '674195', language: 'Kyrgyz', country: 'Kyrgyzstan' },
   { id: '283947', language: 'Italian', country: 'Italy' },
-  { id: '937285', language: 'Turkish', country: 'Turkey' }
+  { id: '937285', language: 'Turkish', country: 'Turkey' },
+  { id: '482693', language: 'Polish', country: 'Poland' },
+  { id: '756148', language: 'Thai', country: 'Thailand' }
 ];
 
 // Derived values - DO NOT EDIT
