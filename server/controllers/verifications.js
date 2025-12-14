@@ -9,7 +9,6 @@ const PILOT_USERS_CONFIG = [
   { id: '193847', language: 'Egyptian Arabic', country: 'Egypt' },
   { id: '415672', language: 'Hindi', country: 'India' },
   { id: '829456', language: 'Tagalog', country: 'Philippines' },
-  { id: '651327', language: 'Kazakh', country: 'Kazakhstan' },
   { id: '129431', language: 'Amharic', country: 'Ethiopia' },
   { id: '548792', language: 'Tunisian Arabic', country: 'Tunisia' },
   { id: '305864', language: 'Brazilian Portuguese', country: 'Brazil' },
@@ -21,7 +20,10 @@ const PILOT_USERS_CONFIG = [
   { id: '937285', language: 'Turkish', country: 'Turkey' },
   { id: '482693', language: 'Georgian', country: 'Georgia' },
   { id: '756148', language: 'Thai', country: 'Thailand' },
-  { id: '814527', language: 'Batak Karo', country: 'Indonesia' }
+  { id: '814527', language: 'Batak Karo', country: 'Indonesia' },
+  { id: '925371', language: 'Yemeni Arabic', country: 'Yemen' },
+  { id: '634892', language: 'Hausa', country: 'Nigeria' },
+  { id: '471836', language: 'Moroccan Arabic', country: 'Morocco' }
 ];
 
 // Derived values - DO NOT EDIT
