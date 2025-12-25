@@ -22,7 +22,7 @@ const PILOT_USERS_CONFIG = [
   { id: '756148', language: 'Thai', country: 'Thailand' },
   { id: '814527', language: 'Batak Karo', country: 'Indonesia' },
   { id: '925371', language: 'Yemeni Arabic', country: 'Yemen' },
-  { id: '634892', language: 'Hausa', country: 'Nigeria' },
+  { id: '634892', language: 'Yoruba', country: 'Nigeria' },
   { id: '471836', language: 'Moroccan Arabic', country: 'Morocco' },
   { id: '592847', language: 'Japanese', country: 'Japan' }
 ];
