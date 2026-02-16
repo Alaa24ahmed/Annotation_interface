@@ -376,29 +376,113 @@
         document.addEventListener('DOMContentLoaded', async function() {
     // ============================================
     // PILOT USERS CONFIGURATION - EDIT HERE ONLY
+    // 3 verifiers per language
     // ============================================
     const PILOT_USERS_CONFIG = [
+      // Chinese - China (3 verifiers)
       { id: '742891', language: 'Chinese', country: 'China' },
+      { id: '742892', language: 'Chinese', country: 'China' },
+      { id: '742893', language: 'Chinese', country: 'China' },
+      
+      // Indonesian - Indonesia (3 verifiers)
       { id: '586234', language: 'Indonesian', country: 'Indonesia' },
+      { id: '586235', language: 'Indonesian', country: 'Indonesia' },
+      { id: '586236', language: 'Indonesian', country: 'Indonesia' },
+      
+      // Egyptian Arabic - Egypt (3 verifiers)
       { id: '193847', language: 'Egyptian Arabic', country: 'Egypt' },
+      { id: '193848', language: 'Egyptian Arabic', country: 'Egypt' },
+      { id: '193849', language: 'Egyptian Arabic', country: 'Egypt' },
+      
+      // Hindi - India (3 verifiers)
       { id: '415672', language: 'Hindi', country: 'India' },
+      { id: '415673', language: 'Hindi', country: 'India' },
+      { id: '415674', language: 'Hindi', country: 'India' },
+      
+      // Tagalog - Philippines (3 verifiers)
       { id: '829456', language: 'Tagalog', country: 'Philippines' },
+      { id: '829457', language: 'Tagalog', country: 'Philippines' },
+      { id: '829458', language: 'Tagalog', country: 'Philippines' },
+      
+      // Amharic - Ethiopia (3 verifiers)
       { id: '129431', language: 'Amharic', country: 'Ethiopia' },
+      { id: '129432', language: 'Amharic', country: 'Ethiopia' },
+      { id: '129433', language: 'Amharic', country: 'Ethiopia' },
+      
+      // Tunisian Arabic - Tunisia (3 verifiers)
       { id: '548792', language: 'Tunisian Arabic', country: 'Tunisia' },
+      { id: '548793', language: 'Tunisian Arabic', country: 'Tunisia' },
+      { id: '548794', language: 'Tunisian Arabic', country: 'Tunisia' },
+      
+      // Brazilian Portuguese - Brazil (3 verifiers)
       { id: '305864', language: 'Brazilian Portuguese', country: 'Brazil' },
+      { id: '305865', language: 'Brazilian Portuguese', country: 'Brazil' },
+      { id: '305866', language: 'Brazilian Portuguese', country: 'Brazil' },
+      
+      // Mexican Spanish - Mexico (3 verifiers)
       { id: '762549', language: 'Mexican Spanish', country: 'Mexico' },
+      { id: '762550', language: 'Mexican Spanish', country: 'Mexico' },
+      { id: '762551', language: 'Mexican Spanish', country: 'Mexico' },
+      
+      // Zulu - South Africa (3 verifiers)
       { id: '438276', language: 'Zulu', country: 'South Africa' },
+      { id: '438277', language: 'Zulu', country: 'South Africa' },
+      { id: '438278', language: 'Zulu', country: 'South Africa' },
+      
+      // Greek - Greece (3 verifiers)
       { id: '591823', language: 'Greek', country: 'Greece' },
+      { id: '591824', language: 'Greek', country: 'Greece' },
+      { id: '591825', language: 'Greek', country: 'Greece' },
+      
+      // Kyrgyz - Kyrgyzstan (3 verifiers)
       { id: '674195', language: 'Kyrgyz', country: 'Kyrgyzstan' },
+      { id: '674196', language: 'Kyrgyz', country: 'Kyrgyzstan' },
+      { id: '674197', language: 'Kyrgyz', country: 'Kyrgyzstan' },
+      
+      // Italian - Italy (3 verifiers)
       { id: '283947', language: 'Italian', country: 'Italy' },
+      { id: '283948', language: 'Italian', country: 'Italy' },
+      { id: '283949', language: 'Italian', country: 'Italy' },
+      
+      // Turkish - Turkey (3 verifiers)
       { id: '937285', language: 'Turkish', country: 'Turkey' },
+      { id: '937286', language: 'Turkish', country: 'Turkey' },
+      { id: '937287', language: 'Turkish', country: 'Turkey' },
+      
+      // Georgian - Georgia (3 verifiers)
       { id: '482693', language: 'Georgian', country: 'Georgia' },
+      { id: '482694', language: 'Georgian', country: 'Georgia' },
+      { id: '482695', language: 'Georgian', country: 'Georgia' },
+      
+      // Thai - Thailand (3 verifiers)
       { id: '756148', language: 'Thai', country: 'Thailand' },
+      { id: '756149', language: 'Thai', country: 'Thailand' },
+      { id: '756150', language: 'Thai', country: 'Thailand' },
+      
+      // Batak Karo - Indonesia (3 verifiers)
       { id: '814527', language: 'Batak Karo', country: 'Indonesia' },
+      { id: '814528', language: 'Batak Karo', country: 'Indonesia' },
+      { id: '814529', language: 'Batak Karo', country: 'Indonesia' },
+      
+      // Yemeni Arabic - Yemen (3 verifiers)
       { id: '925371', language: 'Yemeni Arabic', country: 'Yemen' },
+      { id: '925372', language: 'Yemeni Arabic', country: 'Yemen' },
+      { id: '925373', language: 'Yemeni Arabic', country: 'Yemen' },
+      
+      // Yoruba - Nigeria (3 verifiers)
       { id: '634892', language: 'Yoruba', country: 'Nigeria' },
+      { id: '634893', language: 'Yoruba', country: 'Nigeria' },
+      { id: '634894', language: 'Yoruba', country: 'Nigeria' },
+      
+      // Moroccan Arabic - Morocco (3 verifiers)
       { id: '471836', language: 'Moroccan Arabic', country: 'Morocco' },
-      { id: '592847', language: 'Japanese', country: 'Japan' }
+      { id: '471837', language: 'Moroccan Arabic', country: 'Morocco' },
+      { id: '471838', language: 'Moroccan Arabic', country: 'Morocco' },
+      
+      // Japanese - Japan (3 verifiers)
+      { id: '592847', language: 'Japanese', country: 'Japan' },
+      { id: '592848', language: 'Japanese', country: 'Japan' },
+      { id: '592849', language: 'Japanese', country: 'Japan' }
     ];            // Derived values - DO NOT EDIT (automatically generated from config above)
             const validPilotIds = PILOT_USERS_CONFIG.map(u => u.id);
             const pilotUsersMap = new Map(PILOT_USERS_CONFIG.map(u => [u.id, { language: u.language, country: u.country }]));
