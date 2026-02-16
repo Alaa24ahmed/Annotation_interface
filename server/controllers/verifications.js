@@ -145,6 +145,15 @@ async function saveVerification(req, res) {
       comment
     } = req.body;
 
+    console.log('Verification request received:', {
+      annotation_id,
+      template_id,
+      verifier_user_id,
+      selected_option,
+      is_correct,
+      subset_id
+    });
+
     // Validate required fields
     if (!annotation_id || !template_id || !verifier_user_id || !selected_option) {
       return res.status(400).json({

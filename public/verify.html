@@ -681,6 +681,8 @@
                     comment: comment || null
                 };
                 
+                console.log('Submitting verification:', verificationData);
+                
                 try {
                     submitBtn.disabled = true;
                     submitBtn.textContent = 'Submitting...';
@@ -694,7 +696,10 @@
                     });
                     
                     if (!response.ok) {
-                        throw new Error('Failed to submit verification');
+                        const errorData = await response.json().catch(() => ({}));
+                        const errorMsg = errorData.error || errorData.message || 'Failed to submit verification';
+                        console.error('Server error:', errorData);
+                        throw new Error(errorMsg);
                     }
                     
                     statusDiv.className = 'status success';
