@@ -32,33 +32,26 @@ const validPilotIds = PILOT_USERS_CONFIG.map(u => u.id);
 // ============================================
 
 /**
- * Get annotations that need verification for a specific subset and language
+ * Get annotations that need verification for a specific language and country
  */
 async function getAnnotationsForVerification(req, res) {
   try {
-    const { subset, language } = req.query;
+    const { language, country } = req.query;
 
     // Validate parameters
-    if (!subset || !language) {
+    if (!language || !country) {
       return res.status(400).json({
-        error: 'Missing required parameters: subset and language'
+        error: 'Missing required parameters: language and country'
       });
     }
 
-    const subsetId = parseInt(subset);
-    if (isNaN(subsetId) || subsetId < 1 || subsetId > 10) {
-      return res.status(400).json({
-        error: 'Invalid subset ID. Must be between 1 and 10'
-      });
-    }
-
-    // Query annotations from the specified subset and language
+    // Query annotations from the annotations_verified table
     // Only get annotations that have all required fields filled
     const { data, error } = await supabase
-      .from('annotations')
+      .from('annotations_verified')
       .select('*')
-      .eq('subset_id', subsetId)
       .eq('language', language)
+      .eq('country', country)
       .not('generated_question', 'is', null)
       .not('generated_option1', 'is', null)
       .not('generated_option2', 'is', null)
@@ -90,22 +83,15 @@ async function getAnnotationsForVerification(req, res) {
 }
 
 /**
- * Get list of annotation IDs already verified by this verifier in this subset
+ * Get list of annotation IDs already verified by this verifier
  */
 async function getCompletedVerifications(req, res) {
   try {
-    const { verifier_id, subset } = req.query;
+    const { verifier_id } = req.query;
 
-    if (!verifier_id || !subset) {
+    if (!verifier_id) {
       return res.status(400).json({
-        error: 'Missing required parameters: verifier_id and subset'
-      });
-    }
-
-    const subsetId = parseInt(subset);
-    if (isNaN(subsetId) || subsetId < 1 || subsetId > 10) {
-      return res.status(400).json({
-        error: 'Invalid subset ID. Must be between 1 and 10'
+        error: 'Missing required parameter: verifier_id'
       });
     }
 
@@ -113,8 +99,7 @@ async function getCompletedVerifications(req, res) {
     const { data, error } = await supabase
       .from('verifications')
       .select('annotation_id')
-      .eq('verifier_user_id', verifier_id)
-      .eq('subset_id', subsetId);
+      .eq('verifier_user_id', verifier_id);
 
     if (error) {
       console.error('Error fetching completed verifications:', error);
@@ -124,7 +109,7 @@ async function getCompletedVerifications(req, res) {
       });
     }
 
-    const verifiedAnnotationIds = data ? data.map(v => v.annotation_id) : [];
+    const verifiedAnnotationIds = data ? data.map(v => String(v.annotation_id)) : [];
 
     return res.status(200).json({
       verified_annotation_ids: verifiedAnnotationIds,
@@ -156,7 +141,8 @@ async function saveVerification(req, res) {
       subset_id,
       language,
       country,
-      time_spent_seconds
+      time_spent_seconds,
+      comment
     } = req.body;
 
     // Validate required fields
@@ -174,8 +160,8 @@ async function saveVerification(req, res) {
       });
     }
 
-    // Validate subset_id
-    if (!subset_id || subset_id < 1 || subset_id > 10) {
+    // Validate subset_id if provided (optional since we're loading from CSV)
+    if (subset_id && (subset_id < 1 || subset_id > 10)) {
       return res.status(400).json({
         error: 'Invalid subset ID. Must be between 1 and 10'
       });
@@ -219,10 +205,11 @@ async function saveVerification(req, res) {
       is_correct: is_correct === true,
       original_correct_position: original_correct_position || 'A',
       shuffled_correct_position: shuffled_correct_position || selected_option,
-      subset_id,
+      subset_id: subset_id || null,
       language: language || null,
       country: country || null,
       time_spent_seconds: time_spent_seconds || 0,
+      comment: comment || null,
       created_at: new Date().toISOString()
     };
 
@@ -245,7 +232,7 @@ async function saveVerification(req, res) {
       annotation_id,
       verifier_user_id,
       is_correct,
-      subset_id
+      subset_id: subset_id || 'N/A'
     });
 
     return res.status(201).json({
