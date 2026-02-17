@@ -724,10 +724,14 @@
                 // Add selection to clicked option
                 optionElement.classList.add('selected');
                 
+                // Get the text content of the selected option
+                const optionText = optionElement.querySelector('.option-text').textContent;
+                
                 // Store selection
                 selectedOption = {
                     position: optionElement.dataset.position,
-                    isCorrect: optionElement.dataset.isCorrect === 'true'
+                    isCorrect: optionElement.dataset.isCorrect === 'true',
+                    text: optionText
                 };
                 
                 // Enable submit button
@@ -755,6 +759,7 @@
                     template_id: currentAnnotation.template_id,
                     verifier_user_id: verifierId,
                     selected_option: selectedOption.position,
+                    selected_option_text: selectedOption.text,
                     is_correct: selectedOption.isCorrect,
                     original_correct_position: 'A',
                     shuffled_correct_position: shuffledCorrectPosition,

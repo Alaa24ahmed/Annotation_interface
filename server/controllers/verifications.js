@@ -219,6 +219,7 @@ async function saveVerification(req, res) {
       template_id,
       verifier_user_id,
       selected_option,
+      selected_option_text,
       is_correct,
       original_correct_position,
       shuffled_correct_position,
@@ -234,6 +235,7 @@ async function saveVerification(req, res) {
       template_id,
       verifier_user_id,
       selected_option,
+      selected_option_text,
       is_correct,
       subset_id
     });
@@ -295,6 +297,7 @@ async function saveVerification(req, res) {
       template_id,
       verifier_user_id,
       selected_option,
+      selected_option_text: selected_option_text || null,
       is_correct: is_correct === true,
       original_correct_position: original_correct_position || 'A',
       shuffled_correct_position: shuffled_correct_position || selected_option,
